@@ -64,13 +64,13 @@ function mapDbToCourse(
     : (fallbackCourse?.level || "Intermediate");
 
   return {
-    id: fallbackCourse ? fallbackCourse.id : 1,
+    id: dbCourse.id || (fallbackCourse ? fallbackCourse.id : 1),
     slug: dbCourse.slug,
     title: dbCourse.title,
     description: dbCourse.summary || fallbackCourse?.description || "",
     category: dbCourse.category || fallbackCourse?.category || "Web Development",
     tag: dbCourse.popular ? "POPULAR" : fallbackCourse?.tag || "FEATURED",
-    imgUrl: fallbackCourse?.imgUrl || dbCourse.cover_image_url || "",
+    imgUrl: dbCourse.cover_image_url || fallbackCourse?.imgUrl || "",
     level: levelVal as Course["level"],
     duration: durationMins || fallbackCourse?.duration || 120,
     durationFormatted: durationFormatted || fallbackCourse?.durationFormatted || "2h",
@@ -112,9 +112,9 @@ export const courseService = {
         return MOCK_COURSES;
       }
 
-      // Merge with MOCK_COURSES to preserve rich assets and images
-      return dbCourses.map((dbC, idx) => {
-        const fallback = MOCK_COURSES.find((m) => m.slug === dbC.slug) || MOCK_COURSES[idx];
+      // Merge with MOCK_COURSES to preserve rich assets and images only if slug matches
+      return dbCourses.map((dbC) => {
+        const fallback = MOCK_COURSES.find((m) => m.slug === dbC.slug);
         return mapDbToCourse(dbC, [], [], fallback);
       });
     } catch (err) {
@@ -134,11 +134,21 @@ export const courseService = {
     }
 
     try {
-      const { data: dbCourse, error } = await supabase
+      let { data: dbCourse, error } = await supabase
         .from("courses")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
+
+      if (!error && !dbCourse) {
+        const res = await supabase
+          .from("courses")
+          .select("*")
+          .eq("id", slug)
+          .maybeSingle();
+        dbCourse = res.data;
+        error = res.error;
+      }
 
       if (error || !dbCourse) {
         return fallback;
@@ -217,31 +227,49 @@ export const courseService = {
   },
 
   /**
-   * Update an existing course in Supabase
+   * Update an existing course in Supabase (by id or slug)
    */
-  async updateCourse(id: string | number, updates: Partial<DbCourse>): Promise<Course> {
-    const targetId = String(id);
+  async updateCourse(idOrSlug: string | number, updates: Partial<DbCourse>): Promise<Course> {
+    const target = String(idOrSlug);
     const sanitizedUpdates: Partial<DbCourse> = { ...updates };
     delete sanitizedUpdates.id;
     delete (sanitizedUpdates as Partial<DbCourse> & { created_at?: string }).created_at;
 
     if (isSupabaseConfigured) {
-      const { data: updated, error } = await supabase
+      // 1. Try updating by id
+      let { data: updated, error } = await supabase
         .from("courses")
         .update(sanitizedUpdates)
-        .eq("id", targetId)
+        .eq("id", target)
         .select()
-        .single();
+        .maybeSingle();
+
+      // 2. If not found by id, try updating by slug
+      if (!error && !updated) {
+        const res = await supabase
+          .from("courses")
+          .update(sanitizedUpdates)
+          .eq("slug", target)
+          .select()
+          .maybeSingle();
+        updated = res.data;
+        error = res.error;
+      }
 
       if (error) {
         console.error("Supabase updateCourse error:", error);
         throw new Error(error.message || "Failed to update course in database");
       }
+
+      if (!updated) {
+        throw new Error(`Course not found in database with id or slug "${target}"`);
+      }
+
       return mapDbToCourse(updated as DbCourse, [], []);
     }
 
-    const existing = await this.fetchCourseById(targetId);
-    if (!existing) throw new Error(`Course ${targetId} not found`);
+    const existing = await this.fetchCourseById(target);
+    if (!existing) throw new Error(`Course ${target} not found`);
     return {
       ...existing,
       title: updates.title ?? existing.title,
@@ -255,19 +283,33 @@ export const courseService = {
   },
 
   /**
-   * Delete a course from Supabase by id
+   * Delete a course from Supabase (by id or slug)
    */
-  async deleteCourse(id: string | number): Promise<boolean> {
-    const targetId = String(id);
+  async deleteCourse(idOrSlug: string | number): Promise<boolean> {
+    const target = String(idOrSlug);
     if (isSupabaseConfigured) {
-      const { error } = await supabase
+      // 1. Try deleting by id
+      const { error, count } = await supabase
         .from("courses")
-        .delete()
-        .eq("id", targetId);
+        .delete({ count: "exact" })
+        .eq("id", target);
 
       if (error) {
         console.error("Supabase deleteCourse error:", error);
         throw new Error(error.message || "Failed to delete course from database");
+      }
+
+      // 2. If 0 rows deleted by id, try deleting by slug
+      if (count === 0) {
+        const { error: slugError } = await supabase
+          .from("courses")
+          .delete()
+          .eq("slug", target);
+
+        if (slugError) {
+          console.error("Supabase deleteCourse error by slug:", slugError);
+          throw new Error(slugError.message || "Failed to delete course from database");
+        }
       }
     }
     return true;
