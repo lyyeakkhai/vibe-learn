@@ -1,11 +1,53 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Image as ImageIcon, Loader2 } from "lucide-react"
+import { X, Image as ImageIcon, Loader2, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DbCourse } from "@/lib/supabase"
 import type { Course } from "@/types/courses"
 import { CATEGORIES } from "@/types/courses"
 
 const LEVEL_OPTIONS = ["beginner", "intermediate", "advanced"] as const
+
+const DEMO_PRESETS: Partial<DbCourse>[] = [
+  {
+    title: "Mastering Next.js 15 & AI Agents",
+    slug: "nextjs-15-ai-agents",
+    category: "AI Engineering",
+    level: "intermediate",
+    price: 49.99,
+    summary: "Learn to build high-performance fullstack applications with Next.js 15 App Router, React Server Components, Supabase PostgreSQL, and autonomous LLM agents.",
+    instructor_name: "Sarah Chen",
+    instructor_bio: "Staff AI Engineer and educator with over 10 years of experience in distributed systems and modern web frameworks.",
+    instructor_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    cover_image_url: "/src/assets/courses/nextjs.jpg",
+    popular: true,
+  },
+  {
+    title: "Production System Design & Scalability",
+    slug: "production-system-design",
+    category: "Backend & Infrastructure",
+    level: "advanced",
+    price: 69.99,
+    summary: "Architect highly scalable, fault-tolerant backend systems handling millions of requests per second using caching, microservices, and message queues.",
+    instructor_name: "Marcus Vance",
+    instructor_bio: "Principal Systems Architect, former infrastructure lead at high-growth cloud tech enterprises.",
+    instructor_avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    cover_image_url: "/src/assets/courses/system-design.jpg",
+    popular: true,
+  },
+  {
+    title: "Fullstack Python & FastAPI Masterclass",
+    slug: "python-fastapi-masterclass",
+    category: "Web Development",
+    level: "beginner",
+    price: 0,
+    summary: "Master modern asynchronous Python, FastAPI, relational database modeling, and real-time WebSockets from ground zero.",
+    instructor_name: "Elena Rostova",
+    instructor_bio: "Senior Python Developer and author of widely-used open source data engineering tools.",
+    instructor_avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    cover_image_url: "/src/assets/courses/python.jpg",
+    popular: false,
+  },
+]
 
 const PRESET_IMAGES = [
   { label: "Next.js", value: "/src/assets/courses/nextjs.jpg" },
@@ -130,13 +172,37 @@ function CourseFormInner({
     }
   }
 
+  const handleFillDemo = () => {
+    const randomPreset = DEMO_PRESETS[Math.floor(Math.random() * DEMO_PRESETS.length)]
+    const uniqueSlug = `${randomPreset.slug}-${Date.now().toString().slice(-4)}`
+    setForm({
+      ...randomPreset,
+      slug: uniqueSlug,
+    })
+    setSlugManuallyEdited(true)
+    setFieldErrors({})
+  }
+
   return (
     <>
       {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-card px-6 py-4">
-        <h2 id="course-modal-title" className="font-sans text-lg font-semibold text-foreground">
-          {isEditing ? "Edit Course" : "Create New Course"}
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 id="course-modal-title" className="font-sans text-lg font-semibold text-foreground">
+            {isEditing ? "Edit Course" : "Create New Course"}
+          </h2>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={handleFillDemo}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary-300 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700 transition hover:bg-primary-100 active:scale-95 dark:border-primary-800 dark:bg-primary-950/60 dark:text-primary-300 dark:hover:bg-primary-900/60"
+              title="Auto-fill form with sample course data"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-primary-500" />
+              <span>Fill Sample Data</span>
+            </button>
+          )}
+        </div>
         <button
           type="button"
           onClick={onClose}
