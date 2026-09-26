@@ -14,6 +14,7 @@ export function NavigationSection() {
   const isCoursesActive =
     location.pathname.startsWith("/courses") || location.pathname.startsWith("/course")
   const isMyLearningActive = location.pathname.startsWith("/my-learning")
+  const isAdminCoursesActive = location.pathname.startsWith("/admin/courses")
 
   return (
     <header className="sticky top-0 z-50 h-[72px] border-b border-neutral-200 bg-white/90 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/90">
@@ -65,6 +66,23 @@ export function NavigationSection() {
                 <span className="absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full bg-primary-500" />
               )}
             </Link>
+
+            <SignedIn>
+              <Link
+                to="/admin/courses"
+                className={cn(
+                  "relative flex h-full items-center text-sm font-medium transition-colors hover:text-neutral-900 dark:hover:text-white",
+                  isAdminCoursesActive
+                    ? "font-semibold text-neutral-900 dark:text-white"
+                    : "text-neutral-500 dark:text-neutral-400"
+                )}
+              >
+                Manage Courses
+                {isAdminCoursesActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full bg-primary-500" />
+                )}
+              </Link>
+            </SignedIn>
           </nav>
         </div>
 
@@ -154,6 +172,20 @@ export function NavigationSection() {
             >
               My Learning
             </Link>
+            <SignedIn>
+              <Link
+                to="/admin/courses"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                  isAdminCoursesActive
+                    ? "bg-primary-50 font-semibold text-primary-700 dark:bg-primary-950/60 dark:text-primary-300"
+                    : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-white"
+                )}
+              >
+                Manage Courses
+              </Link>
+            </SignedIn>
           </nav>
         </div>
       )}

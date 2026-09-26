@@ -39,7 +39,7 @@ export type LearningOutcome = {
 };
 
 export type Course = {
-  id: number;
+  id: number | string;
   slug: string;
   title: string;
   description: string;

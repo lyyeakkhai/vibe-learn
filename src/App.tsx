@@ -7,6 +7,7 @@ import { LearningPage } from "@/pages/learning-page"
 import { MyLearningPage } from "@/pages/my-learning-page"
 import { SignInPage } from "@/pages/sign-in-page"
 import { SignUpPage } from "@/pages/sign-up-page"
+import { AdminCoursesPage } from "@/pages/admin-courses-page"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { NotFoundPage } from "@/pages/not-found-page"
 
@@ -54,6 +55,14 @@ export function App() {
           />
           <Route path="sign-in/*" element={<SignInPage />} />
           <Route path="sign-up/*" element={<SignUpPage />} />
+          <Route
+            path="admin/courses"
+            element={
+              <ProtectedRoute>
+                <AdminCoursesPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

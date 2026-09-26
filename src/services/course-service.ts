@@ -169,6 +169,111 @@ export const courseService = {
   },
 
   /**
+   * Create a new course in Supabase
+   */
+  async createCourse(data: Partial<DbCourse>): Promise<Course> {
+    const courseId = data.id || `course_${Date.now()}`;
+    const slug =
+      data.slug ||
+      data.title
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") ||
+      `course-${Date.now()}`;
+
+    const newDbCourse: DbCourse = {
+      id: courseId,
+      slug,
+      title: data.title || "Untitled Course",
+      summary: data.summary || null,
+      cover_image_url: data.cover_image_url || null,
+      category: data.category || "Web Development",
+      instructor_name: data.instructor_name || "Lead Instructor",
+      instructor_bio: data.instructor_bio || null,
+      instructor_avatar: data.instructor_avatar || null,
+      level: data.level || "intermediate",
+      price: data.price !== undefined ? Number(data.price) : 0,
+      popular: Boolean(data.popular),
+      student_count: data.student_count || 0,
+      learning_outcomes: data.learning_outcomes || [],
+      created_at: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured) {
+      const { data: inserted, error } = await supabase
+        .from("courses")
+        .insert(newDbCourse)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase createCourse error:", error);
+        throw new Error(error.message || "Failed to create course in database");
+      }
+      return mapDbToCourse(inserted as DbCourse, [], []);
+    }
+
+    return mapDbToCourse(newDbCourse, [], []);
+  },
+
+  /**
+   * Update an existing course in Supabase
+   */
+  async updateCourse(id: string | number, updates: Partial<DbCourse>): Promise<Course> {
+    const targetId = String(id);
+    const sanitizedUpdates: Partial<DbCourse> = { ...updates };
+    delete sanitizedUpdates.id;
+    delete (sanitizedUpdates as Partial<DbCourse> & { created_at?: string }).created_at;
+
+    if (isSupabaseConfigured) {
+      const { data: updated, error } = await supabase
+        .from("courses")
+        .update(sanitizedUpdates)
+        .eq("id", targetId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase updateCourse error:", error);
+        throw new Error(error.message || "Failed to update course in database");
+      }
+      return mapDbToCourse(updated as DbCourse, [], []);
+    }
+
+    const existing = await this.fetchCourseById(targetId);
+    if (!existing) throw new Error(`Course ${targetId} not found`);
+    return {
+      ...existing,
+      title: updates.title ?? existing.title,
+      slug: updates.slug ?? existing.slug,
+      description: updates.summary ?? existing.description,
+      category: updates.category ?? existing.category,
+      price: updates.price !== undefined ? Number(updates.price) : existing.price,
+      imgUrl: updates.cover_image_url ?? existing.imgUrl,
+      isFeatured: updates.popular !== undefined ? Boolean(updates.popular) : existing.isFeatured,
+    };
+  },
+
+  /**
+   * Delete a course from Supabase by id
+   */
+  async deleteCourse(id: string | number): Promise<boolean> {
+    const targetId = String(id);
+    if (isSupabaseConfigured) {
+      const { error } = await supabase
+        .from("courses")
+        .delete()
+        .eq("id", targetId);
+
+      if (error) {
+        console.error("Supabase deleteCourse error:", error);
+        throw new Error(error.message || "Failed to delete course from database");
+      }
+    }
+    return true;
+  },
+
+  /**
    * Fetch a lesson by slug from Supabase
    */
   async fetchLessonBySlug(lessonSlug: string): Promise<CourseLesson | null> {
