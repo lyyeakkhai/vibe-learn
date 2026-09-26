@@ -52,6 +52,7 @@ This roadmap defines the strict order of implementation for the Vibelearn projec
 - [x] 4.2: Swap frontend mock data with real data calls via `courseService` across catalog, course detail, and lesson pages.
 - [x] 4.3: Integrate progress tracking: periodically save video timestamps to `progressService` and implement interactive "Mark as Complete".
 - [x] 4.4: **CHECKPOINT:** End-to-end testing: User can log in, watch a video, leave, and resume from the saved timestamp.
+- [x] 4.5: Build protected `/admin/courses` page with full course CRUD (Create, Read, Update, Delete) synced directly with Supabase. Includes `courseService.createCourse`, `updateCourse`, `deleteCourse` methods, `CourseFormModal`, `DeleteConfirmModal`, and "Manage Courses" navigation link for signed-in users.
 
 ## Phase 5: Deployment
 **Goal:** Deploy the application to production.
