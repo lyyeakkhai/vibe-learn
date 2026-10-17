@@ -1,6 +1,5 @@
 import { ApiClient } from "../lib/api-client";
 import type { DbCourse, DbModule, DbLesson } from "../types/db";
-import { MOCK_COURSES } from "../lib/mock-data";
 import type {
   Course,
   CourseModule,
@@ -90,10 +89,7 @@ export function mapApiLessonToCourseLesson(
   };
 }
 
-export function mapApiCourseToCourse(
-  apiCourse: any,
-  fallbackCourse?: Course
-): Course {
+export function mapApiCourseToCourse(apiCourse: any): Course {
   const modulesWithLessons: CourseModule[] = (apiCourse.modules || [])
     .slice()
     .sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0))
@@ -104,9 +100,7 @@ export function mapApiCourseToCourse(
         .map((l: any) =>
           mapApiLessonToCourseLesson(
             l,
-            apiCourse.studentCount ||
-              apiCourse.student_count ||
-              fallbackCourse?.enrolled
+            Number(apiCourse.studentCount || apiCourse.student_count || 0)
           )
         );
 
@@ -125,10 +119,7 @@ export function mapApiCourseToCourse(
       };
     });
 
-  const finalModules =
-    modulesWithLessons.length > 0
-      ? modulesWithLessons
-      : fallbackCourse?.modules || [];
+  const finalModules = modulesWithLessons;
 
   const totalCourseSeconds = finalModules.reduce((acc, m) => {
     return (
@@ -138,12 +129,12 @@ export function mapApiCourseToCourse(
   const durationMins =
     totalCourseSeconds > 0
       ? Math.round(totalCourseSeconds / 60)
-      : Number(apiCourse.duration) || fallbackCourse?.duration || 120;
+      : Number(apiCourse.duration) || 0;
   const hours = Math.floor(durationMins / 60);
   const mins = durationMins % 60;
   const durationFormatted = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
-  const levelVal = normalizeLevel(apiCourse.level || fallbackCourse?.level);
+  const levelVal = normalizeLevel(apiCourse.level);
 
   const rawOutcomes = apiCourse.learningOutcomes || apiCourse.learning_outcomes;
   const learningOutcomes: LearningOutcome[] = Array.isArray(rawOutcomes)
@@ -152,79 +143,65 @@ export function mapApiCourseToCourse(
         title: o.title || "",
         description: o.description || "",
       }))
-    : fallbackCourse?.learningOutcomes || [];
+    : [];
 
-  const enrolled =
-    Number(
-      apiCourse.studentCount ??
-        apiCourse.student_count ??
-        fallbackCourse?.enrolled
-    ) || 18000;
-  const priceNum = Number(apiCourse.price ?? fallbackCourse?.price ?? 0);
-  const isFeatured = Boolean(
-    apiCourse.popular ?? apiCourse.isFeatured ?? fallbackCourse?.isFeatured
+  const enrolled = Number(
+    apiCourse.studentCount ?? apiCourse.student_count ?? 0
   );
+  const priceNum = Number(apiCourse.price ?? 0);
+  const isFeatured = Boolean(apiCourse.popular ?? apiCourse.isFeatured);
 
   return {
-    id: apiCourse.id || (fallbackCourse ? fallbackCourse.id : 1),
-    slug: apiCourse.slug || fallbackCourse?.slug || "",
-    title: apiCourse.title || fallbackCourse?.title || "Untitled Course",
+    id: apiCourse.id || 1,
+    slug: apiCourse.slug || "",
+    title: apiCourse.title || "Untitled Course",
     description:
       apiCourse.summary ||
       apiCourse.description ||
-      fallbackCourse?.description ||
       "",
-    category:
-      apiCourse.category || fallbackCourse?.category || "Web Development",
-    tag: isFeatured ? "POPULAR" : fallbackCourse?.tag || "FEATURED",
+    category: apiCourse.category || "Web Development",
+    tag: isFeatured ? "POPULAR" : (apiCourse.tag || "FEATURED"),
     imgUrl:
       apiCourse.coverImageUrl ||
       apiCourse.cover_image_url ||
       apiCourse.imgUrl ||
-      fallbackCourse?.imgUrl ||
       "",
     level: levelVal,
     duration: durationMins,
-    durationFormatted:
-      durationFormatted || fallbackCourse?.durationFormatted || "2h",
+    durationFormatted: durationFormatted || "0m",
     modules: finalModules,
     learningOutcomes,
-    rating: Number(apiCourse.rating) || fallbackCourse?.rating || 4.8,
-    reviews: Number(apiCourse.reviews) || fallbackCourse?.reviews || 124,
+    rating: Number(apiCourse.rating) || 4.8,
+    reviews: Number(apiCourse.reviews) || 124,
     enrolled,
     studentsFormatted: enrolled.toLocaleString(),
     price: priceNum,
     isFree: priceNum === 0,
     isFeatured,
-    language: apiCourse.language || fallbackCourse?.language || "English",
+    language: apiCourse.language || "English",
     instructor: {
       name:
         apiCourse.instructorName ||
         apiCourse.instructor_name ||
         apiCourse.instructor?.name ||
-        fallbackCourse?.instructor.name ||
         "Lead Instructor",
       avatar:
         apiCourse.instructorAvatar ||
         apiCourse.instructor_avatar ||
         apiCourse.instructor?.avatar ||
-        fallbackCourse?.instructor.avatar ||
         "",
       bio: parseBio(
         apiCourse.instructorBio ||
           apiCourse.instructor_bio ||
-          apiCourse.instructor?.bio,
-        fallbackCourse?.instructor.bio
+          apiCourse.instructor?.bio
       ),
       expertise:
         apiCourse.instructor?.expertise ||
-        fallbackCourse?.instructor.expertise ||
         [],
     },
     createdAt:
       apiCourse.createdAt ||
       apiCourse.created_at ||
-      fallbackCourse?.createdAt ||
       new Date().toISOString(),
   };
 }
@@ -232,8 +209,7 @@ export function mapApiCourseToCourse(
 export function mapDbToCourse(
   dbCourse: DbCourse,
   dbModules: DbModule[] = [],
-  dbLessons: DbLesson[] = [],
-  fallbackCourse?: Course
+  dbLessons: DbLesson[] = []
 ): Course {
   const modules = dbModules.map((m) => ({
     ...m,
@@ -242,14 +218,11 @@ export function mapDbToCourse(
     ),
   }));
 
-  return mapApiCourseToCourse(
-    {
-      ...dbCourse,
-      modules:
-        modules.length > 0 ? modules : (dbCourse as any).modules || [],
-    },
-    fallbackCourse
-  );
+  return mapApiCourseToCourse({
+    ...dbCourse,
+    modules:
+      modules.length > 0 ? modules : (dbCourse as any).modules || [],
+  });
 }
 
 function toCreateCourseDto(data: any): Record<string, any> {
@@ -389,53 +362,35 @@ function toUpdateCourseDto(data: any): Record<string, any> {
 
 export const courseService = {
   /**
-   * Fetch all courses from NestJS REST API with fallback to local mock data
+   * Fetch all courses from NestJS REST API
    */
   async fetchCourses(): Promise<Course[]> {
-    // 1. Try NestJS REST API (GET /courses)
     try {
       const apiCourses = await ApiClient.get<any[]>("/courses");
-      if (Array.isArray(apiCourses) && apiCourses.length > 0) {
-        return apiCourses.map((c) => {
-          const fallback = MOCK_COURSES.find(
-            (m) => m.slug === c.slug || String(m.id) === String(c.id)
-          );
-          return mapApiCourseToCourse(c, fallback);
-        });
+      if (Array.isArray(apiCourses)) {
+        return apiCourses.map((c) => mapApiCourseToCourse(c));
       }
     } catch (err) {
-      console.warn("NestJS API fetchCourses error, attempting fallback:", err);
+      console.error("NestJS API fetchCourses error:", err);
     }
-
-    // 2. Static local fallback
-    return MOCK_COURSES;
+    return [];
   },
 
   /**
    * Fetch a single course by slug with nested modules and lessons
    */
   async fetchCourseBySlug(slug: string): Promise<Course | null> {
-    const fallback =
-      MOCK_COURSES.find((c) => c.slug === slug || String(c.id) === slug) ||
-      null;
-
-    // 1. Try NestJS REST API (GET /courses/:slug)
     try {
       const apiCourse = await ApiClient.get<any>(
         `/courses/${encodeURIComponent(slug)}`
       );
       if (apiCourse && apiCourse.id) {
-        return mapApiCourseToCourse(apiCourse, fallback || undefined);
+        return mapApiCourseToCourse(apiCourse);
       }
     } catch (err) {
-      console.warn(
-        `NestJS API fetchCourseBySlug("${slug}") error, attempting fallback:`,
-        err
-      );
+      console.warn(`NestJS API fetchCourseBySlug("${slug}") error:`, err);
     }
-
-    // 2. Static mock fallback
-    return fallback;
+    return null;
   },
 
   /**
@@ -443,22 +398,12 @@ export const courseService = {
    */
   async fetchCourseById(id: string | number): Promise<Course | null> {
     const target = String(id);
-    const fallback =
-      MOCK_COURSES.find((c) => String(c.id) === target || c.slug === target) ||
-      null;
-    const slugToFetch = fallback ? fallback.slug : target;
 
-    // First try the matched slug
-    const course = await this.fetchCourseBySlug(slugToFetch);
-    if (course) return course;
+    // First try directly fetching by slug
+    const directCourse = await this.fetchCourseBySlug(target);
+    if (directCourse) return directCourse;
 
-    // If target was different from slugToFetch, try target directly
-    if (slugToFetch !== target) {
-      const direct = await this.fetchCourseBySlug(target);
-      if (direct) return direct;
-    }
-
-    // If target looks like a UUID or ID not matching slug, check all courses
+    // If target was an ID, find the matching course from all courses list
     try {
       const allCourses = await this.fetchCourses();
       const match = allCourses.find(
@@ -467,21 +412,22 @@ export const courseService = {
       if (match && match.slug && match.slug !== target) {
         return this.fetchCourseBySlug(match.slug);
       }
-    } catch {
-      // Fall through to fallback
+      if (match) return match;
+    } catch (err) {
+      console.error("fetchCourseById error:", err);
     }
 
-    return fallback;
+    return null;
   },
 
   /**
-   * Fetch single lesson with previous and next lesson links (GET /courses/:courseSlug/lessons/:lessonSlug)
+   * Fetch single lesson with previous and next lesson links
    */
   async fetchLesson(
     courseSlug: string,
     lessonSlug: string
   ): Promise<LessonDetailResult | null> {
-    // 1. Try NestJS REST API
+    // 1. Try dedicated endpoint if supported
     try {
       const res = await ApiClient.get<any>(
         `/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(
@@ -495,24 +441,12 @@ export const courseService = {
           nextLesson: res.nextLesson || null,
         };
       }
-    } catch (err) {
-      console.warn(
-        `NestJS API fetchLesson("${courseSlug}", "${lessonSlug}") error, attempting fallback:`,
-        err
-      );
+    } catch {
+      // Endpoint may not be implemented, fallback to course tree lookup
     }
 
-    // 2. Mock data / Supabase fallback
-    const targetCourse =
-      MOCK_COURSES.find(
-        (c) => c.slug === courseSlug || String(c.id) === courseSlug
-      ) ||
-      MOCK_COURSES.find((c) =>
-        c.modules.some((m) =>
-          m.lessons?.some((l) => l.slug === lessonSlug || l.id === lessonSlug)
-        )
-      );
-
+    // 2. Fetch course by slug and resolve lesson navigation
+    const targetCourse = await this.fetchCourseBySlug(courseSlug);
     if (targetCourse) {
       const allLessons = targetCourse.modules.flatMap((m) => m.lessons || []);
       const idx = allLessons.findIndex(
@@ -569,23 +503,22 @@ export const courseService = {
       if (detail) return detail.lesson;
     }
 
-    // Search across MOCK_COURSES
-    for (const course of MOCK_COURSES) {
-      for (const mod of course.modules) {
-        const found = mod.lessons?.find(
-          (l) => l.slug === lessonSlug || l.id === lessonSlug
-        );
-        if (found) {
-          // Attempt fresh fetch from NestJS API using course slug
-          try {
-            const detail = await this.fetchLesson(course.slug, lessonSlug);
-            if (detail) return detail.lesson;
-          } catch {
-            // Return local found if API unavailable
+    // If no courseSlug provided, search all courses
+    try {
+      const allCourses = await this.fetchCourses();
+      for (const course of allCourses) {
+        const fullCourse = await this.fetchCourseBySlug(course.slug);
+        if (fullCourse) {
+          for (const mod of fullCourse.modules) {
+            const found = mod.lessons?.find(
+              (l) => l.slug === lessonSlug || l.id === lessonSlug
+            );
+            if (found) return found;
           }
-          return found;
         }
       }
+    } catch (err) {
+      console.error("fetchLessonBySlug error:", err);
     }
 
     return null;

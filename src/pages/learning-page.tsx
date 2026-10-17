@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import { useUser } from "@clerk/clerk-react"
 import { courseService } from "@/services/course-service"
@@ -20,9 +20,15 @@ import {
   Sparkles,
   Users,
 } from "lucide-react"
-import { MOCK_COURSES } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { Course, CourseLesson, CourseModule } from "@/types/courses"
+
+interface LessonWithModule {
+  lesson: CourseLesson
+  module: CourseModule
+  moduleIndex: number
+  lessonIndex: number
+}
 
 export function LearningPage() {
   const { id } = useParams<{ id: string }>()
@@ -32,15 +38,35 @@ export function LearningPage() {
   const savedCourseId =
     typeof window !== "undefined" ? localStorage.getItem("lastVisitedCourseId") : null
   const effectiveId = id || savedCourseId || "1"
-  const courseId = Number(effectiveId)
-  const initialCourse: Course =
-    MOCK_COURSES.find((c) => c.id === courseId || c.slug === effectiveId) || MOCK_COURSES[0]
-  const [course, setCourse] = useState<Course>(initialCourse)
+
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(Boolean(effectiveId))
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<"content" | "notes">("content")
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
+  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
+  const [notesState, setNotesState] = useState<Record<string, string>>({})
+  const [mobileCurriculumOpen, setMobileCurriculumOpen] = useState(false)
 
   useEffect(() => {
-    courseService.fetchCourseById(effectiveId).then((c) => {
-      if (c) setCourse(c)
-    })
+    let cancelled = false
+    if (!effectiveId) return
+
+    courseService
+      .fetchCourseById(effectiveId)
+      .then((c) => {
+        if (!cancelled) setCourse(c)
+      })
+      .catch((err) => {
+        console.error("Failed to load course for learning:", err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [effectiveId])
 
   // Save visited course to local storage
@@ -50,22 +76,28 @@ export function LearningPage() {
     }
   }, [course?.id])
 
-  // Flatten lessons to easily find current and next/previous
-  const allLessonsWithModule = course.modules.flatMap((m, mIdx) =>
-    (m.lessons || []).map((l, lIdx) => ({
-      lesson: l,
-      module: m,
-      moduleIndex: mIdx,
-      lessonIndex: lIdx,
-    }))
-  )
+  // Load user completed lessons from progressService
+  useEffect(() => {
+    if (!user?.id || !course?.slug) return
+    progressService.fetchCompletedLessonIds(user.id, course.slug).then((ids) => {
+      if (ids.length > 0) {
+        setCompletedLessonIds(new Set(ids))
+      }
+    })
+  }, [user?.id, course?.slug])
 
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
-  const [prevCourseId, setPrevCourseId] = useState(course.id)
-  if (course.id !== prevCourseId) {
-    setPrevCourseId(course.id)
-    setSelectedLessonId(null)
-  }
+  // Flatten lessons to easily find current and next/previous
+  const allLessonsWithModule: LessonWithModule[] = useMemo(() => {
+    if (!course?.modules) return []
+    return course.modules.flatMap((m, mIdx) =>
+      (m.lessons || []).map((l, lIdx) => ({
+        lesson: l,
+        module: m,
+        moduleIndex: mIdx,
+        lessonIndex: lIdx,
+      }))
+    )
+  }, [course])
 
   const lessonQuery = searchParams.get("lesson")
   const activeIdOrSlug = selectedLessonId ?? lessonQuery
@@ -75,18 +107,17 @@ export function LearningPage() {
   )
   const currentIndex = targetIndex !== -1 ? targetIndex : 0
 
-  const [activeTab, setActiveTab] = useState<"content" | "notes">("content")
-  const [isBookmarked, setIsBookmarked] = useState(false)
-  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
-  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
-  const [notesState, setNotesState] = useState<Record<string, string>>({})
-  const [mobileCurriculumOpen, setMobileCurriculumOpen] = useState(false)
-
   const currentItem = allLessonsWithModule[currentIndex] || allLessonsWithModule[0]
-  const activeLesson: CourseLesson = currentItem?.lesson
-  const activeModule: CourseModule = currentItem?.module
+  const activeLesson: CourseLesson | undefined = currentItem?.lesson
+  const activeModule: CourseModule | undefined = currentItem?.module
 
-  const storageKey = activeLesson ? `notes_${course.id}_${activeLesson.id}` : ""
+  // Track active lesson resume position
+  useEffect(() => {
+    if (!user?.id || !activeLesson?.id || !course?.slug) return
+    progressService.updateResumeTimestamp(user.id, activeLesson.id, course.slug, 1).catch(() => {})
+  }, [user?.id, activeLesson?.id, course?.slug])
+
+  const storageKey = activeLesson && course ? `notes_${course.id}_${activeLesson.id}` : ""
   const userNotes =
     notesState[storageKey] ??
     (typeof window !== "undefined" && storageKey ? localStorage.getItem(storageKey) || "" : "")
@@ -106,22 +137,6 @@ export function LearningPage() {
       setMobileCurriculumOpen(false)
     }
   }
-
-  // Load user completed lessons from progressService
-  useEffect(() => {
-    if (!user?.id || !course?.slug) return
-    progressService.fetchCompletedLessonIds(user.id, course.slug).then((ids) => {
-      if (ids.length > 0) {
-        setCompletedLessonIds(new Set(ids))
-      }
-    })
-  }, [user?.id, course?.slug])
-
-  // Track active lesson resume position
-  useEffect(() => {
-    if (!user?.id || !activeLesson?.id || !course?.slug) return
-    progressService.updateResumeTimestamp(user.id, activeLesson.id, course.slug, 1).catch(() => {})
-  }, [user?.id, activeLesson?.id, course?.slug])
 
   const toggleModule = (mIdx: number) => {
     setExpandedModules((prev) => ({
@@ -154,6 +169,49 @@ export function LearningPage() {
   const percentComplete = allLessonsWithModule.length
     ? Math.round((completedLessonIds.size / allLessonsWithModule.length) * 100)
     : 0
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFC] pb-20 dark:bg-background">
+        <div className="mx-auto flex max-w-[1440px] flex-col lg:flex-row">
+          <div className="hidden lg:block w-80 shrink-0 border-r border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="h-6 w-32 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-4 h-10 w-full animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-8 space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-12 w-full animate-pulse rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 px-4 py-8 sm:px-8 lg:px-12">
+            <div className="h-6 w-48 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-4 h-10 w-3/4 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-6 aspect-video w-full animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-8 h-24 w-full animate-pulse rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!course || !activeLesson) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
+          Course Not Found
+        </h1>
+        <p className="mt-2 text-base text-neutral-600 dark:text-neutral-400">
+          The course or lesson you are looking for does not exist or has been removed.
+        </p>
+        <Link
+          to="/courses"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Browse All Courses
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] pb-20 dark:bg-background">

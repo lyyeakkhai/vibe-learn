@@ -53,6 +53,7 @@ This roadmap defines the strict order of implementation for the Vibelearn projec
 - [x] 4.3: Integrate progress tracking: periodically save video timestamps to `progressService` and implement interactive "Mark as Complete".
 - [x] 4.4: **CHECKPOINT:** End-to-end testing: User can log in, watch a video, leave, and resume from the saved timestamp.
 - [x] 4.5: Build protected `/admin/courses` page with full course CRUD (Create, Read, Update, Delete) synced directly with Supabase. Includes `courseService.createCourse`, `updateCourse`, `deleteCourse` methods, `CourseFormModal`, `DeleteConfirmModal`, and "Manage Courses" navigation link for signed-in users.
+- [x] 4.6: Complete removal of static mock dataset (`mock-data.ts`), eliminate mock fallbacks in `courseService`, and wire all frontend views (`HomePage`, `CourseDetailPage`, `LearningPage`) with loading skeletons directly to the live NestJS backend API.
 
 ## Phase 5: Deployment
 **Goal:** Deploy the application to production.

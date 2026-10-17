@@ -1,17 +1,24 @@
 import { useNavigate } from "react-router-dom"
 import { CourseCard } from "@/components/common/course-card"
-import { MOCK_COURSES } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { Course } from "@/types/courses"
 
 type CourseSectionProps = {
   courses?: Course[]
+  progressMap?: Map<string | number, number>
+  loading?: boolean
   onCourseClick?: (course: Course) => void
 }
 
-export function CourseSection({ courses = MOCK_COURSES.slice(0, 3), onCourseClick }: CourseSectionProps) {
+export function CourseSection({
+  courses = [],
+  progressMap,
+  loading = false,
+  onCourseClick,
+}: CourseSectionProps) {
   const navigate = useNavigate()
-  const handleCourseClick = onCourseClick || ((course: Course) => navigate(`/courses/${course.id}`))
+  const handleCourseClick =
+    onCourseClick || ((course: Course) => navigate(`/courses/${course.id}`))
 
   return (
     <section id="courses" className="bg-emerald-50/30 px-4 py-20 sm:px-6 dark:bg-emerald-950/10">
@@ -34,16 +41,33 @@ export function CourseSection({ courses = MOCK_COURSES.slice(0, 3), onCourseClic
           <LearnGrowAchieve className="hidden shrink-0 md:block" />
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              progress={25}
-              onClick={() => handleCourseClick(course)}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="h-80 animate-pulse rounded-3xl border border-neutral-200 bg-neutral-100/80 p-6 dark:border-neutral-800 dark:bg-neutral-900/60"
+              />
+            ))}
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="mt-12 rounded-2xl border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-800">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              No courses available at this time.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                progress={progressMap?.get(course.id) || 0}
+                onClick={() => handleCourseClick(course)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

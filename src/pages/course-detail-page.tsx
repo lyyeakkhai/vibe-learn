@@ -21,7 +21,6 @@ import {
   Play,
   Users,
 } from "lucide-react"
-import { MOCK_COURSES } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { Course, CourseModule, LearningOutcome } from "@/types/courses"
 
@@ -64,17 +63,29 @@ export function CourseDetailPage() {
     0: true,
   })
 
-  const courseId = Number(id)
-  const initialFallback =
-    MOCK_COURSES.find((c) => c.id === courseId || c.slug === id) || MOCK_COURSES[0]
-  const [course, setCourse] = useState<Course>(initialFallback)
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(Boolean(id))
   const [userProgress, setUserProgress] = useState<UserProgressState[]>([])
 
   useEffect(() => {
+    let cancelled = false
     if (!id) return
-    courseService.fetchCourseById(id).then((c) => {
-      if (c) setCourse(c)
-    })
+
+    courseService
+      .fetchCourseById(id)
+      .then((c) => {
+        if (!cancelled) setCourse(c)
+      })
+      .catch((err) => {
+        console.error("Failed to fetch course:", err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   useEffect(() => {
@@ -83,6 +94,55 @@ export function CourseDetailPage() {
       setUserProgress(p)
     })
   }, [user?.id, course?.slug])
+
+  const toggleModule = (moduleKey: string | number) => {
+    setExpandedModules((prev) => ({
+      ...prev,
+      [moduleKey]: !prev[moduleKey],
+    }))
+  }
+
+  if (loading) {
+    return (
+      <div className="relative min-h-screen bg-[#FAFAFC] pb-32 dark:bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="h-6 w-48 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+          <div className="mt-8 flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-12">
+            <div className="aspect-square w-full max-w-[280px] sm:max-w-[340px] animate-pulse rounded-3xl bg-neutral-200 dark:bg-neutral-800" />
+            <div className="flex-1 space-y-4 w-full">
+              <div className="h-6 w-24 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
+              <div className="h-10 w-3/4 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+              <div className="h-20 w-full animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+              <div className="h-12 w-48 animate-pulse rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+            </div>
+          </div>
+          <div className="mt-16 space-y-4">
+            <div className="h-8 w-48 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="h-40 w-full animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!course) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">
+          Course Not Found
+        </h1>
+        <p className="mt-2 text-base text-neutral-600 dark:text-neutral-400">
+          The course you are looking for does not exist or could not be loaded.
+        </p>
+        <Link
+          to="/courses"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+        >
+          <ArrowRight className="h-4 w-4" /> Browse All Courses
+        </Link>
+      </div>
+    )
+  }
 
   const allLessons = course.modules.flatMap((m) => m.lessons || [])
   const completedSet = new Set(userProgress.filter((p) => p.isCompleted).map((p) => p.lessonId))
@@ -94,14 +154,6 @@ export function CourseDetailPage() {
   const hasStarted = completedSet.size > 0
 
   const outcomes: LearningOutcome[] = course.learningOutcomes || []
-
-  const toggleModule = (moduleKey: string | number) => {
-    setExpandedModules((prev) => ({
-      ...prev,
-      [moduleKey]: !prev[moduleKey],
-    }))
-  }
-
   const displayedModules = showAllModules ? course.modules : course.modules.slice(0, 6)
 
   return (
