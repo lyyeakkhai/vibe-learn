@@ -10,6 +10,8 @@ const envSchema = z.object({
     .optional()
     .transform((val) => (!val || val.trim() === '' ? 'http://localhost:3000/api' : val))
     .pipe(z.string().url('VITE_API_URL must be a valid URL')),
+  VITE_DEMO_ADMIN_EMAIL: z.string().optional(),
+  VITE_DEMO_ADMIN_PASSWORD: z.string().optional(),
   MODE: z.enum(['development', 'production', 'test']).default('development'),
   BASE_URL: z.string().default('/'),
 });
