@@ -1,6 +1,6 @@
 # Vibelearn Backend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build and verify the complete production-grade Vibelearn backend with NestJS 11, TypeORM, PostgreSQL on Docker (OrbStack) port 5433, Clerk JWT authentication, public course/lesson APIs, user synchronization, progress tracking, and database seeding.
 
@@ -33,7 +33,7 @@
 - Consumes: Host Docker (OrbStack).
 - Produces: PostgreSQL running on `localhost:5433` (`vibelearn` database) and required npm dependencies installed.
 
-- [ ] **Step 1: Create `docker-compose.yml` for PostgreSQL 16**
+- [x] **Step 1: Create `docker-compose.yml` for PostgreSQL 16**
 ```yaml
 services:
   postgres:
@@ -58,7 +58,7 @@ volumes:
   vibelearn_pgdata:
 ```
 
-- [ ] **Step 2: Create `.env.example` and local `.env`**
+- [x] **Step 2: Create `.env.example` and local `.env`**
 ```env
 PORT=3000
 NODE_ENV=development
@@ -80,14 +80,14 @@ CLERK_PUBLISHABLE_KEY=pk_test_placeholder
 FRONTEND_URL=http://localhost:5173
 ```
 
-- [ ] **Step 3: Install TypeORM, PostgreSQL driver, Clerk, and Config packages**
+- [x] **Step 3: Install TypeORM, PostgreSQL driver, Clerk, and Config packages**
 Run:
 ```bash
 pnpm add @nestjs/typeorm typeorm pg @nestjs/config @clerk/backend class-validator class-transformer
 pnpm add -D @types/pg
 ```
 
-- [ ] **Step 4: Verify Docker container starts and is healthy**
+- [x] **Step 4: Verify Docker container starts and is healthy**
 Run:
 ```bash
 docker compose up -d
@@ -95,7 +95,7 @@ docker compose ps
 ```
 Expected: `vibelearn-postgres` is `Up` and `healthy` on `0.0.0.0:5433->5432/tcp`.
 
-- [ ] **Step 5: Commit changes**
+- [x] **Step 5: Commit changes**
 ```bash
 git add docker-compose.yml .env.example package.json pnpm-lock.yaml
 git commit -m "chore: setup docker postgres container, env template, and dependencies"
@@ -114,7 +114,7 @@ git commit -m "chore: setup docker postgres container, env template, and depende
 - Consumes: Environment variables from `@nestjs/config`.
 - Produces: TypeORM connection pool exported across the application.
 
-- [ ] **Step 1: Write test for DatabaseModule configuration**
+- [x] **Step 1: Write test for DatabaseModule configuration**
 Create `src/database/database.module.spec.ts`:
 ```typescript
 import { Test, TestingModule } from '@nestjs/testing';
@@ -139,7 +139,7 @@ describe('DatabaseModule', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `src/database/database.module.ts`**
+- [x] **Step 2: Implement `src/database/database.module.ts`**
 ```typescript
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -168,7 +168,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 export class DatabaseModule {}
 ```
 
-- [ ] **Step 3: Create `src/database/data-source.ts` for TypeORM CLI**
+- [x] **Step 3: Create `src/database/data-source.ts` for TypeORM CLI**
 ```typescript
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
@@ -188,10 +188,10 @@ export default new DataSource({
 });
 ```
 
-- [ ] **Step 4: Import ConfigModule and DatabaseModule in `src/app.module.ts`**
-- [ ] **Step 5: Run tests and verify build**
+- [x] **Step 4: Import ConfigModule and DatabaseModule in `src/app.module.ts`**
+- [x] **Step 5: Run tests and verify build**
 Run: `pnpm run test src/database/database.module.spec.ts`
-- [ ] **Step 6: Commit changes**
+- [x] **Step 6: Commit changes**
 ```bash
 git add src/database/ src/app.module.ts
 git commit -m "feat: configure database module with typeorm and environment variables"
@@ -210,7 +210,7 @@ git commit -m "feat: configure database module with typeorm and environment vari
 - Consumes: NestJS execution context.
 - Produces: Standard JSON error envelope and typed `@CurrentUser()` parameter decorator.
 
-- [ ] **Step 1: Write unit test for `HttpExceptionFilter`**
+- [x] **Step 1: Write unit test for `HttpExceptionFilter`**
 Create `src/common/filters/http-exception.filter.spec.ts`:
 ```typescript
 import { HttpExceptionFilter } from './http-exception.filter';
@@ -250,7 +250,7 @@ describe('HttpExceptionFilter', () => {
 });
 ```
 
-- [ ] **Step 2: Implement `src/common/filters/http-exception.filter.ts`**
+- [x] **Step 2: Implement `src/common/filters/http-exception.filter.ts`**
 ```typescript
 import {
   ExceptionFilter,
@@ -307,7 +307,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 }
 ```
 
-- [ ] **Step 3: Implement `src/common/decorators/current-user.decorator.ts`**
+- [x] **Step 3: Implement `src/common/decorators/current-user.decorator.ts`**
 ```typescript
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
@@ -320,7 +320,7 @@ export const CurrentUser = createParamDecorator(
 );
 ```
 
-- [ ] **Step 4: Update `src/main.ts` with global prefix, validation pipe, and exception filter**
+- [x] **Step 4: Update `src/main.ts` with global prefix, validation pipe, and exception filter**
 ```typescript
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -351,9 +351,9 @@ async function bootstrap() {
 bootstrap();
 ```
 
-- [ ] **Step 5: Run tests and verify**
+- [x] **Step 5: Run tests and verify**
 Run: `pnpm run test src/common/filters/http-exception.filter.spec.ts`
-- [ ] **Step 6: Commit changes**
+- [x] **Step 6: Commit changes**
 ```bash
 git add src/common/ src/main.ts
 git commit -m "feat: setup global exception filter, validation pipe, and current user decorator"
@@ -373,13 +373,13 @@ git commit -m "feat: setup global exception filter, validation pipe, and current
 - Consumes: Incoming HTTP request `Authorization: Bearer <token>`.
 - Produces: Decoded Clerk JWT payload and verified `request.user`.
 
-- [ ] **Step 1: Write unit test for `ClerkAuthGuard`**
+- [x] **Step 1: Write unit test for `ClerkAuthGuard`**
 Create `src/modules/auth/guards/clerk-auth.guard.spec.ts`:
 - Test missing Authorization header returns `401 Unauthorized`.
 - Test invalid Bearer token returns `401 Unauthorized`.
 - Test valid token attaches user and returns `true`.
 
-- [ ] **Step 2: Implement `src/modules/auth/clerk.service.ts`**
+- [x] **Step 2: Implement `src/modules/auth/clerk.service.ts`**
 ```typescript
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -407,11 +407,11 @@ export class ClerkService {
 }
 ```
 
-- [ ] **Step 3: Implement `src/modules/auth/guards/clerk-auth.guard.ts`**
-- [ ] **Step 4: Implement `src/modules/auth/auth.module.ts`**
-- [ ] **Step 5: Run tests and verify**
+- [x] **Step 3: Implement `src/modules/auth/guards/clerk-auth.guard.ts`**
+- [x] **Step 4: Implement `src/modules/auth/auth.module.ts`**
+- [x] **Step 5: Run tests and verify**
 Run: `pnpm run test src/modules/auth/guards/clerk-auth.guard.spec.ts`
-- [ ] **Step 6: Commit changes**
+- [x] **Step 6: Commit changes**
 ```bash
 git add src/modules/auth/
 git commit -m "feat: implement auth module with clerk token verification and guard"
@@ -436,11 +436,11 @@ git commit -m "feat: implement auth module with clerk token verification and gua
 - Consumes: Clerk User ID and profile data.
 - Produces: `User` entity records and endpoints `GET /api/users/me` and `POST /api/users/sync`.
 
-- [ ] **Step 1: Scaffold Users module using Nest CLI**
+- [x] **Step 1: Scaffold Users module using Nest CLI**
 Run: `pnpm exec nest g resource modules/users --no-spec`
 (Select REST API, generate CRUD entrypoints: yes).
 
-- [ ] **Step 2: Implement `src/modules/users/entities/user.entity.ts`**
+- [x] **Step 2: Implement `src/modules/users/entities/user.entity.ts`**
 ```typescript
 import {
   Entity,
@@ -474,18 +474,18 @@ export class User {
 }
 ```
 
-- [ ] **Step 3: Implement `UsersRepository` and `UsersService`**
+- [x] **Step 3: Implement `UsersRepository` and `UsersService`**
 Methods:
 - `findById(id: string): Promise<User | null>`
 - `findOrCreate(data: { id: string; email?: string; fullName?: string }): Promise<User>`
 - `syncUser(id: string, data: SyncUserDto): Promise<User>`
 
-- [ ] **Step 4: Update `UsersController` with explicit status codes**
+- [x] **Step 4: Update `UsersController` with explicit status codes**
 - `GET /api/users/me` (Protected) -> `200 OK`
 - `POST /api/users/sync` (Protected) -> `200 OK`
 
-- [ ] **Step 5: Run tests and verify**
-- [ ] **Step 6: Commit changes**
+- [x] **Step 5: Run tests and verify**
+- [x] **Step 6: Commit changes**
 ```bash
 git add src/modules/users/
 git commit -m "feat: implement users module with typeorm entity, repository, and sync endpoints"
@@ -516,17 +516,17 @@ git commit -m "feat: implement users module with typeorm entity, repository, and
 - Consumes: Course query parameters and DTOs.
 - Produces: `GET /api/courses` (`200 OK`), `GET /api/courses/:slug` (`200 OK` / `404 Not Found`), `POST /api/courses` (`201 Created`), `PUT /api/courses/:id` (`200 OK`), `DELETE /api/courses/:id` (`204 No Content`).
 
-- [ ] **Step 1: Scaffold Courses and Course-Modules using Nest CLI**
+- [x] **Step 1: Scaffold Courses and Course-Modules using Nest CLI**
 Run:
 ```bash
 pnpm exec nest g resource modules/courses --no-spec
 pnpm exec nest g resource modules/course-modules --no-spec
 ```
 
-- [ ] **Step 2: Implement `Course` entity and `CourseModule` entity**
+- [x] **Step 2: Implement `Course` entity and `CourseModule` entity**
 Include all fields from design specification: `slug`, `title`, `summary`, `coverImageUrl`, `category`, `instructorName`, `level`, `price`, `popular`, `studentCount`, `learningOutcomes` (jsonb), and relations.
 
-- [ ] **Step 3: Implement `CoursesRepository`**
+- [x] **Step 3: Implement `CoursesRepository`**
 Methods:
 - `findAll(query: QueryCoursesDto): Promise<Course[]>`
 - `findBySlug(slug: string): Promise<Course | null>` (with joined modules and lessons ordered by `position`)
@@ -534,12 +534,12 @@ Methods:
 - `updateCourse(id: string, data: UpdateCourseDto): Promise<Course>`
 - `deleteCourse(id: string): Promise<boolean>`
 
-- [ ] **Step 4: Implement `CoursesController` with explicit HTTP decorators (`@HttpCode(HttpStatus.NO_CONTENT)`, etc.)**
-- [ ] **Step 5: Write unit tests for `CoursesService`**
+- [x] **Step 4: Implement `CoursesController` with explicit HTTP decorators (`@HttpCode(HttpStatus.NO_CONTENT)`, etc.)**
+- [x] **Step 5: Write unit tests for `CoursesService`**
 Create `src/modules/courses/courses.service.spec.ts`.
-- [ ] **Step 6: Run tests and verify**
+- [x] **Step 6: Run tests and verify**
 Run: `pnpm run test src/modules/courses/courses.service.spec.ts`
-- [ ] **Step 7: Commit changes**
+- [x] **Step 7: Commit changes**
 ```bash
 git add src/modules/courses/ src/modules/course-modules/
 git commit -m "feat: implement courses and course-modules with relations, repository, and CRUD endpoints"
@@ -563,23 +563,23 @@ git commit -m "feat: implement courses and course-modules with relations, reposi
 - Consumes: Lesson slug or ID.
 - Produces: `GET /api/courses/:courseSlug/lessons/:lessonSlug` (`200 OK` / `404 Not Found`) and `GET /api/lessons/:id` (`200 OK` / `404 Not Found`).
 
-- [ ] **Step 1: Scaffold Lessons module using Nest CLI**
+- [x] **Step 1: Scaffold Lessons module using Nest CLI**
 Run: `pnpm exec nest g resource modules/lessons --no-spec`
 
-- [ ] **Step 2: Implement `Lesson` entity**
+- [x] **Step 2: Implement `Lesson` entity**
 Fields: `id`, `moduleId`, `courseId`, `title`, `slug`, `youtubeVideoId`, `videoUrl`, `duration`, `freePreview`, `notes` (jsonb), `notesPlain`, `keyPoints` (jsonb), `proTip`, `resources` (jsonb), `position`, `createdAt`.
 Foreign keys: `onDelete: 'CASCADE'`.
 
-- [ ] **Step 3: Implement `LessonsRepository` and `LessonsService`**
+- [x] **Step 3: Implement `LessonsRepository` and `LessonsService`**
 Methods:
 - `findByCourseAndLessonSlug(courseSlug: string, lessonSlug: string): Promise<LessonDetailResponse>` (includes previous/next lesson navigation links).
 - `findById(id: string): Promise<Lesson | null>`
 
-- [ ] **Step 4: Implement `LessonsController` with status code handling**
-- [ ] **Step 5: Write unit tests for `LessonsService`**
-- [ ] **Step 6: Run tests and verify**
+- [x] **Step 4: Implement `LessonsController` with status code handling**
+- [x] **Step 5: Write unit tests for `LessonsService`**
+- [x] **Step 6: Run tests and verify**
 Run: `pnpm run test src/modules/lessons/lessons.service.spec.ts`
-- [ ] **Step 7: Commit changes**
+- [x] **Step 7: Commit changes**
 ```bash
 git add src/modules/lessons/
 git commit -m "feat: implement lessons module with detailed content and curriculum navigation"
@@ -602,10 +602,10 @@ git commit -m "feat: implement lessons module with detailed content and curricul
 - Consumes: Authenticated user and progress updates.
 - Produces: `GET /api/progress` (`200 OK`), `POST /api/progress` (`200 OK`), `PATCH /api/progress/complete` (`200 OK`).
 
-- [ ] **Step 1: Scaffold Progress module using Nest CLI**
+- [x] **Step 1: Scaffold Progress module using Nest CLI**
 Run: `pnpm exec nest g resource modules/progress --no-spec`
 
-- [ ] **Step 2: Implement `Progress` entity with composite unique index**
+- [x] **Step 2: Implement `Progress` entity with composite unique index**
 ```typescript
 import {
   Entity,
@@ -659,7 +659,7 @@ export class Progress {
 }
 ```
 
-- [ ] **Step 3: Implement `ProgressRepository` with atomic native upsert**
+- [x] **Step 3: Implement `ProgressRepository` with atomic native upsert**
 Uses query builder:
 ```typescript
 await this.repository
@@ -672,11 +672,11 @@ await this.repository
   .execute();
 ```
 
-- [ ] **Step 4: Implement `ProgressService` and `ProgressController` with `@UseGuards(ClerkAuthGuard)`**
-- [ ] **Step 5: Write unit tests for `ProgressService`**
-- [ ] **Step 6: Run tests and verify**
+- [x] **Step 4: Implement `ProgressService` and `ProgressController` with `@UseGuards(ClerkAuthGuard)`**
+- [x] **Step 5: Write unit tests for `ProgressService`**
+- [x] **Step 6: Run tests and verify**
 Run: `pnpm run test src/modules/progress/progress.service.spec.ts`
-- [ ] **Step 7: Commit changes**
+- [x] **Step 7: Commit changes**
 ```bash
 git add src/modules/progress/
 git commit -m "feat: implement progress module with atomic upsert and video resume tracking"
@@ -694,7 +694,7 @@ git commit -m "feat: implement progress module with atomic upsert and video resu
 - Consumes: `/Users/lyyeakkhai/workspace/vibe-learn/docs/seed.ndjson` and `/Users/lyyeakkhai/workspace/vibe-learn/docs/videos.json`.
 - Produces: Populated database records in `courses`, `modules`, and `lessons`.
 
-- [ ] **Step 1: Write `src/database/seeds/seed.ts`**
+- [x] **Step 1: Write `src/database/seeds/seed.ts`**
 Script logic:
 1. Initialize TypeORM DataSource.
 2. Read and parse NDJSON records and videos JSON.
@@ -703,14 +703,14 @@ Script logic:
 5. Output summary metrics (number of courses, modules, and lessons seeded).
 6. Cleanly destroy DataSource connection.
 
-- [ ] **Step 2: Add seed script command to `package.json`**
+- [x] **Step 2: Add seed script command to `package.json`**
 ```json
 "scripts": {
   "db:seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts"
 }
 ```
 
-- [ ] **Step 3: Execute `pnpm run db:seed` against local PostgreSQL container**
+- [x] **Step 3: Execute `pnpm run db:seed` against local PostgreSQL container**
 Expected output:
 ```text
 Seeding complete:
@@ -719,7 +719,7 @@ Seeding complete:
 - 120 Lessons seeded
 ```
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 ```bash
 git add src/database/seeds/ package.json
 git commit -m "feat: implement idempotent database seeding pipeline from docs ndjson and json"
@@ -737,13 +737,13 @@ git commit -m "feat: implement idempotent database seeding pipeline from docs nd
 - Consumes: Running NestJS app.
 - Produces: Verified HTTP response codes (`200`, `201`, `401`, `404`).
 
-- [ ] **Step 1: Implement `test/courses.e2e-spec.ts`**
+- [x] **Step 1: Implement `test/courses.e2e-spec.ts`**
 - Test `GET /api/courses` returns `200 OK` and non-empty array.
 - Test `GET /api/courses/:slug` with valid slug returns `200 OK` and nested modules/lessons.
 - Test `GET /api/courses/non-existent-slug` returns `404 Not Found` with standard JSON envelope.
 - Test `GET /api/progress` without token returns `401 Unauthorized`.
 
-- [ ] **Step 2: Run all unit and e2e tests**
+- [x] **Step 2: Run all unit and e2e tests**
 Run:
 ```bash
 pnpm run test
@@ -751,7 +751,7 @@ pnpm run test:e2e
 ```
 Expected: All test suites PASS.
 
-- [ ] **Step 3: Run build and lint verification**
+- [x] **Step 3: Run build and lint verification**
 Run:
 ```bash
 pnpm run build
@@ -759,7 +759,7 @@ pnpm run lint
 ```
 Expected: Build succeeds with 0 errors.
 
-- [ ] **Step 4: Commit final verification changes**
+- [x] **Step 4: Commit final verification changes**
 ```bash
 git add test/
 git commit -m "test: add comprehensive e2e tests for courses, status codes, and auth protection"
