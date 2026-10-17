@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { Progress } from '../../progress/entities/progress.entity';
 
+export type UserRole = 'user' | 'admin';
+
 @Entity('users')
 export class User {
   @PrimaryColumn('varchar', { length: 255 })
@@ -18,6 +20,9 @@ export class User {
 
   @Column('varchar', { length: 255, nullable: true, name: 'full_name' })
   fullName: string | null;
+
+  @Column('varchar', { length: 20, default: 'user' })
+  role: 'user' | 'admin';
 
   @OneToMany(() => Progress, (progress) => progress.user)
   progress: Progress[];

@@ -36,7 +36,9 @@ export class CoursesService {
   async create(dto: CreateCourseDto): Promise<Course> {
     const existing = await this.coursesRepository.findBySlug(dto.slug);
     if (existing) {
-      throw new ConflictException(`Course with slug '${dto.slug}' already exists`);
+      throw new ConflictException(
+        `Course with slug '${dto.slug}' already exists`,
+      );
     }
     return this.coursesRepository.createCourse(dto);
   }
@@ -45,7 +47,9 @@ export class CoursesService {
     if (dto.slug) {
       const existing = await this.coursesRepository.findBySlug(dto.slug);
       if (existing && existing.id !== id) {
-        throw new ConflictException(`Course with slug '${dto.slug}' already exists`);
+        throw new ConflictException(
+          `Course with slug '${dto.slug}' already exists`,
+        );
       }
     }
     const updated = await this.coursesRepository.updateCourse(id, dto);

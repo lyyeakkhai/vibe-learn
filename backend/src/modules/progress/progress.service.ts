@@ -8,21 +8,36 @@ import { Progress } from './entities/progress.entity';
 export class ProgressService {
   constructor(private readonly progressRepository: ProgressRepository) {}
 
-  async fetchUserProgress(userId: string, courseId?: string): Promise<Progress[]> {
+  async fetchUserProgress(
+    userId: string,
+    courseId?: string,
+  ): Promise<Progress[]> {
     return this.progressRepository.findByUserId(userId, courseId);
   }
 
-  async fetchCompletedLessonIds(userId: string, courseId?: string): Promise<string[]> {
+  async fetchCompletedLessonIds(
+    userId: string,
+    courseId?: string,
+  ): Promise<string[]> {
     const list = await this.progressRepository.findByUserId(userId, courseId);
     return list.filter((p) => p.isCompleted).map((p) => p.lessonId);
   }
 
-  async upsertProgress(userId: string, dto: UpsertProgressDto): Promise<Progress> {
+  async upsertProgress(
+    userId: string,
+    dto: UpsertProgressDto,
+  ): Promise<Progress> {
     return this.progressRepository.atomicUpsert(userId, dto);
   }
 
-  async toggleComplete(userId: string, dto: ToggleCompleteDto): Promise<Progress> {
-    const existing = await this.progressRepository.findByUserAndLesson(userId, dto.lessonId);
+  async toggleComplete(
+    userId: string,
+    dto: ToggleCompleteDto,
+  ): Promise<Progress> {
+    const existing = await this.progressRepository.findByUserAndLesson(
+      userId,
+      dto.lessonId,
+    );
     const newCompletedState =
       dto.isCompleted !== undefined ? dto.isCompleted : !existing?.isCompleted;
 

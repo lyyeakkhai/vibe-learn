@@ -32,7 +32,10 @@ export class CourseModulesRepository {
     return this.repo.save(mod);
   }
 
-  async updateModule(id: string, dto: UpdateCourseModuleDto): Promise<CourseModule | null> {
+  async updateModule(
+    id: string,
+    dto: UpdateCourseModuleDto,
+  ): Promise<CourseModule | null> {
     await this.repo.update(id, dto);
     return this.findById(id);
   }

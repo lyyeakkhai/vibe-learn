@@ -7,10 +7,7 @@ import { Lesson } from './entities/lesson.entity';
 import { CoursesModule } from '../courses/courses.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Lesson]),
-    CoursesModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Lesson]), CoursesModule],
   controllers: [LessonsController],
   providers: [LessonsService, LessonsRepository],
   exports: [LessonsService, LessonsRepository],

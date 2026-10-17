@@ -1,14 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: config.get<string>('FRONTEND_URL', 'http://localhost:5173'),
     credentials: true,
   });
 
@@ -23,8 +25,8 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const port = process.env.PORT || 3000;
+  const port = config.get<number>('PORT', 3000);
   await app.listen(port);
   console.log(`Vibelearn Backend running on port ${port} with prefix /api`);
 }
-bootstrap();
+void bootstrap();

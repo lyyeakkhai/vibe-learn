@@ -22,7 +22,10 @@ export class ProgressRepository {
     });
   }
 
-  async findByUserAndLesson(userId: string, lessonId: string): Promise<Progress | null> {
+  async findByUserAndLesson(
+    userId: string,
+    lessonId: string,
+  ): Promise<Progress | null> {
     return this.repo.findOne({
       where: { userId, lessonId },
     });
@@ -33,7 +36,8 @@ export class ProgressRepository {
     dto: UpsertProgressDto,
   ): Promise<Progress> {
     const isCompleted = dto.isCompleted !== undefined ? dto.isCompleted : false;
-    const resumeTimestamp = dto.resumeTimestamp !== undefined ? dto.resumeTimestamp : 0;
+    const resumeTimestamp =
+      dto.resumeTimestamp !== undefined ? dto.resumeTimestamp : 0;
 
     await this.repo
       .createQueryBuilder()

@@ -5,8 +5,10 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ClerkService } from '../clerk.service';
 import { UsersService } from '../../users/users.service';
+import { UserRole } from '../../users/entities/user.entity';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
@@ -15,6 +17,7 @@ export class ClerkAuthGuard implements CanActivate {
   constructor(
     private readonly clerkService: ClerkService,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,7 +25,9 @@ export class ClerkAuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing or malformed Authorization header');
+      throw new UnauthorizedException(
+        'Missing or malformed Authorization header',
+      );
     }
 
     const token = authHeader.split(' ')[1];
@@ -32,12 +37,16 @@ export class ClerkAuthGuard implements CanActivate {
       let clerkUserId: string;
       let email: string | null = null;
       let fullName: string | null = null;
+      let resolvedRole: UserRole = 'user';
 
       // Allow mock or dev tokens during local tests if needed
       if (token.startsWith('mock_user_') || token.startsWith('user_')) {
         clerkUserId = token;
         email = `${token}@example.com`;
         fullName = 'Test User';
+        if (token.includes('admin')) {
+          resolvedRole = 'admin';
+        }
       } else {
         const payload = await this.clerkService.verifyToken(token);
         if (!payload || !payload.sub) {
@@ -49,9 +58,29 @@ export class ClerkAuthGuard implements CanActivate {
         try {
           const clerkUser = await this.clerkService.getUser(clerkUserId);
           email = clerkUser?.emailAddresses?.[0]?.emailAddress || null;
-          fullName = `${clerkUser?.firstName || ''} ${clerkUser?.lastName || ''}`.trim() || null;
+          fullName =
+            `${clerkUser?.firstName || ''} ${clerkUser?.lastName || ''}`.trim() ||
+            null;
+
+          if (clerkUser?.publicMetadata?.role === 'admin') {
+            resolvedRole = 'admin';
+          }
         } catch (e) {
-          this.logger.warn(`Could not fetch Clerk profile for ${clerkUserId}, continuing with ID`);
+          this.logger.warn(
+            `Could not fetch Clerk profile for ${clerkUserId}, continuing with ID`,
+          );
+        }
+      }
+
+      // Check ADMIN_EMAILS environment fallback
+      if (resolvedRole !== 'admin' && email) {
+        const adminEmails =
+          this.configService.get<string>('ADMIN_EMAILS') || '';
+        const adminList = adminEmails
+          .split(',')
+          .map((e) => e.trim().toLowerCase());
+        if (adminList.includes(email.toLowerCase())) {
+          resolvedRole = 'admin';
         }
       }
 
@@ -60,6 +89,7 @@ export class ClerkAuthGuard implements CanActivate {
         id: clerkUserId,
         email,
         fullName,
+        role: resolvedRole,
       });
 
       // 3. Attach user to request
@@ -69,8 +99,12 @@ export class ClerkAuthGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      this.logger.warn(`Clerk authentication failure: ${error?.message || error}`);
-      throw new UnauthorizedException('Invalid or expired authentication token');
+      this.logger.warn(
+        `Clerk authentication failure: ${error?.message || error}`,
+      );
+      throw new UnauthorizedException(
+        'Invalid or expired authentication token',
+      );
     }
   }
 }

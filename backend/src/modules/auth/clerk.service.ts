@@ -8,8 +8,10 @@ export class ClerkService {
   private readonly clerk: ClerkClient;
 
   constructor(private readonly config: ConfigService) {
-    const secretKey = this.config.get<string>('CLERK_SECRET_KEY') || 'sk_test_placeholder';
-    const publishableKey = this.config.get<string>('CLERK_PUBLISHABLE_KEY') || 'pk_test_placeholder';
+    const secretKey =
+      this.config.get<string>('CLERK_SECRET_KEY') || 'sk_test_placeholder';
+    const publishableKey =
+      this.config.get<string>('CLERK_PUBLISHABLE_KEY') || 'pk_test_placeholder';
     this.clerk = createClerkClient({ secretKey, publishableKey });
   }
 

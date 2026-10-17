@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsIn } from 'class-validator';
+import type { UserRole } from '../entities/user.entity';
 
 export class SyncUserDto {
   @IsOptional()
@@ -8,4 +9,8 @@ export class SyncUserDto {
   @IsOptional()
   @IsString()
   fullName?: string;
+
+  @IsOptional()
+  @IsIn(['user', 'admin'])
+  role?: UserRole;
 }

@@ -38,7 +38,11 @@ export class Course {
   @Column('text', { nullable: true, name: 'instructor_bio' })
   instructorBio: string | null;
 
-  @Column('varchar', { length: 1024, nullable: true, name: 'instructor_avatar' })
+  @Column('varchar', {
+    length: 1024,
+    nullable: true,
+    name: 'instructor_avatar',
+  })
   instructorAvatar: string | null;
 
   @Column('varchar', { length: 50, nullable: true })

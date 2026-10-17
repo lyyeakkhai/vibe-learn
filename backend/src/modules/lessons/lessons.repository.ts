@@ -19,7 +19,10 @@ export class LessonsRepository {
     });
   }
 
-  async findByCourseAndSlug(courseId: string, slug: string): Promise<Lesson | null> {
+  async findByCourseAndSlug(
+    courseId: string,
+    slug: string,
+  ): Promise<Lesson | null> {
     return this.repo.findOne({
       where: { courseId, slug },
       relations: { module: true, course: true },

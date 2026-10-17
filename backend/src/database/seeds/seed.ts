@@ -21,7 +21,9 @@ function extractPlainTextFromBlocks(blocks: any[]): string {
 
 function extractYoutubeVideoId(url?: string): string | null {
   if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  const match = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/,
+  );
   return match ? match[1] : null;
 }
 
@@ -45,8 +47,10 @@ export async function runSeed() {
 
   // Load videos.json
   const rawVideos = fs.readFileSync(videosPath, 'utf8');
-  const videosMap: Record<string, { id: string; title: string; duration: number }> =
-    JSON.parse(rawVideos);
+  const videosMap: Record<
+    string,
+    { id: string; title: string; duration: number }
+  > = JSON.parse(rawVideos);
 
   // Parse seed.ndjson
   const categories: Record<string, any> = {};
@@ -55,7 +59,10 @@ export async function runSeed() {
   const rawCourses: any[] = [];
 
   const fileStream = fs.createReadStream(seedPath);
-  const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity,
+  });
 
   for await (const line of rl) {
     if (!line.trim()) continue;
@@ -80,7 +87,9 @@ export async function runSeed() {
     const instructor = instructorRef ? instructors[instructorRef] : null;
 
     const categoryRef = rawCourse.category?._ref;
-    const category = categoryRef ? categories[categoryRef]?.title : 'Web Development';
+    const category = categoryRef
+      ? categories[categoryRef]?.title
+      : 'Web Development';
 
     let coverImageUrl = rawCourse.coverImage?._sanityAsset || null;
     if (coverImageUrl && coverImageUrl.startsWith('image@')) {
@@ -122,8 +131,10 @@ export async function runSeed() {
       course.level = rawCourse.level || course.level;
       course.price = Number(rawCourse.price) || 0;
       course.popular = Boolean(rawCourse.popular);
-      course.studentCount = Number(rawCourse.studentCount) || course.studentCount;
-      course.learningOutcomes = rawCourse.learningOutcomes || course.learningOutcomes;
+      course.studentCount =
+        Number(rawCourse.studentCount) || course.studentCount;
+      course.learningOutcomes =
+        rawCourse.learningOutcomes || course.learningOutcomes;
       course = await courseRepo.save(course);
     }
     coursesCount++;
@@ -164,7 +175,9 @@ export async function runSeed() {
             const videoMeta = videosMap[lessonSlug];
 
             const youtubeVideoId =
-              videoMeta?.id || extractYoutubeVideoId(rawLesson.videoUrl) || 'dQw4w9WgXcQ';
+              videoMeta?.id ||
+              extractYoutubeVideoId(rawLesson.videoUrl) ||
+              'dQw4w9WgXcQ';
             const duration = videoMeta?.duration || rawLesson.duration || 0;
             const plainNotes = extractPlainTextFromBlocks(rawLesson.notes);
             const lessonPosition = lIdx + 1;
@@ -180,7 +193,9 @@ export async function runSeed() {
                 title: rawLesson.title,
                 slug: lessonSlug,
                 youtubeVideoId,
-                videoUrl: rawLesson.videoUrl || `https://www.youtube.com/watch?v=${youtubeVideoId}`,
+                videoUrl:
+                  rawLesson.videoUrl ||
+                  `https://www.youtube.com/watch?v=${youtubeVideoId}`,
                 duration,
                 freePreview: Boolean(rawLesson.freePreview),
                 notes: rawLesson.notes || [],
