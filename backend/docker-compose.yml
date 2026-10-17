@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibelearn-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vibelearn
+      POSTGRES_PASSWORD: vibelearn_password
+      POSTGRES_DB: vibelearn_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - vibelearn_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vibelearn -d vibelearn_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  vibelearn_pgdata:

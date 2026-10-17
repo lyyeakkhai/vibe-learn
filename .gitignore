@@ -7,12 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies and build outputs
 node_modules
 dist
 dist-ssr
 *.local
 
+# Environment files
 .env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -26,9 +30,8 @@ dist-ssr
 *.sw?
 *DS_Store
 
-# Documentation and design assets
-docs/
-docs 2/
+# Root design docs
+/docs 2/
 
 # Agent caches and skills
 .agents/
@@ -38,4 +41,3 @@ docs 2/
 .kiro/
 .qoder/
 skills-lock.json
-
