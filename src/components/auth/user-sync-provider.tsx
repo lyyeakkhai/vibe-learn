@@ -15,9 +15,13 @@ export function UserSyncProvider({ children }: UserSyncProviderProps) {
   useEffect(() => {
     if (!isLoaded || !isSignedIn || !user) {
       lastSyncedUserIdRef.current = null;
+      ApiClient.setTokenGetter(null);
       ApiClient.setAuthToken(null);
       return;
     }
+
+    // Register Clerk's dynamic token getter so ApiClient requests always have fresh, unexpired tokens
+    ApiClient.setTokenGetter(() => getToken());
 
     const currentUser = user;
 

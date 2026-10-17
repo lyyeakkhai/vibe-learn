@@ -1,10 +1,17 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+export type TokenGetter = () => Promise<string | null>;
+
 export class ApiClient {
   private static authToken: string | null = null;
+  private static tokenGetter: TokenGetter | null = null;
 
   static setAuthToken(token: string | null) {
     this.authToken = token;
+  }
+
+  static setTokenGetter(getter: TokenGetter | null) {
+    this.tokenGetter = getter;
   }
 
   static getAuthToken(): string | null {
@@ -23,7 +30,22 @@ export class ApiClient {
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    const effectiveToken = token !== undefined ? token : this.authToken;
+    let effectiveToken: string | null = null;
+
+    if (token !== undefined && token !== null) {
+      effectiveToken = token;
+    } else if (this.tokenGetter) {
+      try {
+        effectiveToken = await this.tokenGetter();
+      } catch (err) {
+        console.warn('Failed to retrieve fresh token from tokenGetter:', err);
+      }
+    }
+
+    if (!effectiveToken) {
+      effectiveToken = this.authToken;
+    }
+
     if (effectiveToken) {
       headers['Authorization'] = `Bearer ${effectiveToken}`;
     }
