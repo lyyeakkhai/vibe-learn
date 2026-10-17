@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { User } from '../modules/users/entities/user.entity';
 import { Course } from '../modules/courses/entities/course.entity';
@@ -8,16 +8,34 @@ import { Progress } from '../modules/progress/entities/progress.entity';
 
 dotenv.config();
 
-const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5433', 10),
-  username: process.env.DB_USERNAME || 'vibelearn',
-  password: process.env.DB_PASSWORD || 'vibelearn_password',
-  database: process.env.DB_NAME || 'vibelearn_db',
+const databaseUrl = process.env.DATABASE_URL;
+const isSslRequired =
+  process.env.DB_SSL === 'true' ||
+  (databaseUrl ? databaseUrl.includes('supabase.com') : false);
+
+const baseOptions = {
   entities: [User, Course, CourseModule, Lesson, Progress],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false,
-});
+  ssl: isSslRequired ? { rejectUnauthorized: false } : false,
+};
+
+const options: DataSourceOptions = databaseUrl
+  ? {
+      type: 'postgres',
+      url: databaseUrl,
+      ...baseOptions,
+    }
+  : {
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5433', 10),
+      username: process.env.DB_USERNAME || 'vibelearn',
+      password: process.env.DB_PASSWORD || 'vibelearn_password',
+      database: process.env.DB_NAME || 'vibelearn_db',
+      ...baseOptions,
+    };
+
+const AppDataSource = new DataSource(options);
 
 export default AppDataSource;
