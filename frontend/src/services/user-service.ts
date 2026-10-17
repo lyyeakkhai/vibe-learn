@@ -14,6 +14,7 @@ export interface UserProfile {
   email: string | null;
   fullName: string | null;
   full_name?: string | null;
+  role?: "admin" | "user";
   completedLessonsCount: number;
   activeCoursesCount: number;
   createdAt: string;
@@ -80,6 +81,7 @@ export const userService = {
         email: response.email ?? null,
         fullName: response.fullName ?? response.full_name ?? null,
         full_name: response.fullName ?? response.full_name ?? null,
+        role: response.role || "user",
         completedLessonsCount: response.completedLessonsCount ?? 0,
         activeCoursesCount: response.activeCoursesCount ?? 0,
         createdAt: response.createdAt

@@ -9,6 +9,7 @@ import { SignInPage } from "@/pages/sign-in-page"
 import { SignUpPage } from "@/pages/sign-up-page"
 import { AdminCoursesPage } from "@/pages/admin-courses-page"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { AdminRoute } from "@/components/auth/admin-route"
 import { NotFoundPage } from "@/pages/not-found-page"
 
 export function App() {
@@ -58,9 +59,9 @@ export function App() {
           <Route
             path="admin/courses"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminCoursesPage />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route path="*" element={<NotFoundPage />} />
