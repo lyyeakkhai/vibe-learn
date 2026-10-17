@@ -53,8 +53,9 @@ export const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
 
-  // Role-Based Access Control
+  // Role-Based Access Control & Demo Credentials
   ADMIN_EMAILS: z.string().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
 });
 
 export type EnvironmentVariables = z.infer<typeof envSchema>;
