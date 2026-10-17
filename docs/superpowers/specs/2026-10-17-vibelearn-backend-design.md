@@ -34,6 +34,8 @@ Vibelearn is a learning platform offering structured video courses organized int
 The backend follows a strict layered modular architecture:
 $$\text{Route / Controller} \longrightarrow \text{Service (Business Logic)} \longrightarrow \text{Repository (TypeORM Queries)} \longrightarrow \text{Database}$$
 
+> **CLI Generation Requirement:** In every feature module, developers and agents MUST use the NestJS CLI resource generator (`pnpm exec nest g resource modules/<name>`) to scaffold initial boilerplate (module, controller, service, entity, dto) before applying custom repository and business logic.
+
 Each functional domain is encapsulated into a separate NestJS module:
 
 ```text
