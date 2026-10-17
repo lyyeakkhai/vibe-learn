@@ -1,0 +1,21 @@
+{
+  "name": "vibe-learn-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"backend,frontend\" -c \"blue,magenta\" \"pnpm --filter ./backend start:dev\" \"pnpm --filter ./frontend dev\"",
+    "start:dev": "pnpm run dev",
+    "dev:frontend": "pnpm --filter ./frontend dev",
+    "dev:backend": "pnpm --filter ./backend start:dev",
+    "build": "pnpm --filter ./backend build && pnpm --filter ./frontend build",
+    "build:frontend": "pnpm --filter ./frontend build",
+    "build:backend": "pnpm --filter ./backend build",
+    "test": "pnpm --filter ./backend test",
+    "db:seed": "pnpm --filter ./backend db:seed",
+    "migration:run": "pnpm --filter ./backend migration:run",
+    "lint": "pnpm --recursive lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

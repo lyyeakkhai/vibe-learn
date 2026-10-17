@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { User } from '../modules/users/entities/user.entity';
@@ -6,6 +7,8 @@ import { CourseModule } from '../modules/course-modules/entities/course-module.e
 import { Lesson } from '../modules/lessons/entities/lesson.entity';
 import { Progress } from '../modules/progress/entities/progress.entity';
 
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 const databaseUrl = process.env.DATABASE_URL;
