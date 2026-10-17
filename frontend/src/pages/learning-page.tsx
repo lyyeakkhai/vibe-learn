@@ -78,13 +78,14 @@ export function LearningPage() {
 
   // Load user completed lessons from progressService
   useEffect(() => {
-    if (!user?.id || !course?.slug) return
-    progressService.fetchCompletedLessonIds(user.id, course.slug).then((ids) => {
+    if (!user?.id || !course) return
+    const courseIdentifier = String(course.id || course.slug)
+    progressService.fetchCompletedLessonIds(user.id, courseIdentifier).then((ids) => {
       if (ids.length > 0) {
         setCompletedLessonIds(new Set(ids))
       }
     })
-  }, [user?.id, course?.slug])
+  }, [user?.id, course])
 
   // Flatten lessons to easily find current and next/previous
   const allLessonsWithModule: LessonWithModule[] = useMemo(() => {
@@ -113,9 +114,10 @@ export function LearningPage() {
 
   // Track active lesson resume position
   useEffect(() => {
-    if (!user?.id || !activeLesson?.id || !course?.slug) return
-    progressService.updateResumeTimestamp(user.id, activeLesson.id, course.slug, 1).catch(() => {})
-  }, [user?.id, activeLesson?.id, course?.slug])
+    if (!user?.id || !activeLesson?.id || !course) return
+    const courseIdentifier = String(course.id || course.slug)
+    progressService.updateResumeTimestamp(user.id, activeLesson.id, courseIdentifier, 1).catch(() => {})
+  }, [user?.id, activeLesson?.id, course])
 
   const storageKey = activeLesson && course ? `notes_${course.id}_${activeLesson.id}` : ""
   const userNotes =
@@ -159,8 +161,9 @@ export function LearningPage() {
       return next
     })
 
-    if (user?.id && course?.slug) {
-      progressService.markLessonComplete(user.id, lessonId, course.slug, nextCompleted).catch((err) => {
+    if (user?.id && course) {
+      const courseIdentifier = String(course.id || course.slug)
+      progressService.markLessonComplete(user.id, lessonId, courseIdentifier, nextCompleted).catch((err) => {
         console.warn("Failed to persist lesson completion:", err)
       })
     }

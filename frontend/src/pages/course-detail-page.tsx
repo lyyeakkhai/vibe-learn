@@ -89,11 +89,12 @@ export function CourseDetailPage() {
   }, [id])
 
   useEffect(() => {
-    if (!user?.id || !course?.slug) return
-    progressService.fetchUserProgress(user.id, course.slug).then((p) => {
+    if (!user?.id || !course) return
+    const courseIdentifier = String(course.id || course.slug)
+    progressService.fetchUserProgress(user.id, courseIdentifier).then((p) => {
       setUserProgress(p)
     })
-  }, [user?.id, course?.slug])
+  }, [user?.id, course])
 
   const toggleModule = (moduleKey: string | number) => {
     setExpandedModules((prev) => ({

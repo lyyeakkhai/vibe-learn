@@ -12,14 +12,26 @@ export class ProgressRepository {
   ) {}
 
   async findByUserId(userId: string, courseId?: string): Promise<Progress[]> {
-    const where: any = { userId };
+    const qb = this.repo
+      .createQueryBuilder('progress')
+      .where('progress.user_id = :userId', { userId });
+
     if (courseId) {
-      where.courseId = courseId;
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          courseId,
+        );
+      if (isUuid) {
+        qb.andWhere('progress.course_id = :courseId', { courseId });
+      } else {
+        qb.leftJoin('progress.course', 'course').andWhere(
+          'course.slug = :courseSlug',
+          { courseSlug: courseId },
+        );
+      }
     }
-    return this.repo.find({
-      where,
-      order: { updatedAt: 'DESC' },
-    });
+
+    return qb.orderBy('progress.updated_at', 'DESC').getMany();
   }
 
   async findByUserAndLesson(
