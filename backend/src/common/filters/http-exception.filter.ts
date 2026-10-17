@@ -41,10 +41,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    if (status === 500) {
+    if (status >= 500) {
       this.logger.error(
-        `[${request.method}] ${request.url}`,
+        `[${request.method}] ${request.url} [${status}]`,
         exception instanceof Error ? exception.stack : exception,
+      );
+    } else if (status >= 400) {
+      this.logger.warn(
+        `[${request.method}] ${request.url} [${status}] - ${JSON.stringify(message)}`,
       );
     }
 

@@ -40,4 +40,10 @@ dist-ssr
 .hermes/
 .kiro/
 .qoder/
+.superpowers/
+superpowers/
 skills-lock.json
+
+# Prompts and documentation
+prompts/
+docs/
