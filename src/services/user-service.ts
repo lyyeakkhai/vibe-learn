@@ -1,5 +1,5 @@
 import { ApiClient } from "../lib/api-client";
-import type { DbUser } from "../lib/supabase";
+import type { DbUser } from "../types/db";
 
 export type { DbUser };
 

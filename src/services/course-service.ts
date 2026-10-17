@@ -1,6 +1,5 @@
 import { ApiClient } from "../lib/api-client";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
-import type { DbCourse, DbModule, DbLesson } from "../lib/supabase";
+import type { DbCourse, DbModule, DbLesson } from "../types/db";
 import { MOCK_COURSES } from "../lib/mock-data";
 import type {
   Course,
@@ -408,26 +407,7 @@ export const courseService = {
       console.warn("NestJS API fetchCourses error, attempting fallback:", err);
     }
 
-    // 2. Supabase fallback if configured
-    if (isSupabaseConfigured) {
-      try {
-        const { data: dbCourses, error } = await supabase
-          .from("courses")
-          .select("*")
-          .order("created_at", { ascending: true });
-
-        if (!error && dbCourses && dbCourses.length > 0) {
-          return dbCourses.map((dbC) => {
-            const fallback = MOCK_COURSES.find((m) => m.slug === dbC.slug);
-            return mapDbToCourse(dbC, [], [], fallback);
-          });
-        }
-      } catch (sbErr) {
-        console.warn("Supabase fetchCourses error, using mock data:", sbErr);
-      }
-    }
-
-    // 3. Static local fallback
+    // 2. Static local fallback
     return MOCK_COURSES;
   },
 
@@ -454,44 +434,7 @@ export const courseService = {
       );
     }
 
-    // 2. Supabase fallback if configured
-    if (isSupabaseConfigured) {
-      try {
-        let { data: dbCourse, error } = await supabase
-          .from("courses")
-          .select("*")
-          .eq("slug", slug)
-          .maybeSingle();
-
-        if (!error && !dbCourse) {
-          const res = await supabase
-            .from("courses")
-            .select("*")
-            .eq("id", slug)
-            .maybeSingle();
-          dbCourse = res.data;
-          error = res.error;
-        }
-
-        if (!error && dbCourse) {
-          const [{ data: dbModules }, { data: dbLessons }] = await Promise.all([
-            supabase.from("modules").select("*").eq("course_id", dbCourse.id),
-            supabase.from("lessons").select("*").eq("course_id", dbCourse.id),
-          ]);
-
-          return mapDbToCourse(
-            dbCourse,
-            dbModules || [],
-            dbLessons || [],
-            fallback || undefined
-          );
-        }
-      } catch (sbErr) {
-        console.warn("Supabase fetchCourseBySlug error, using fallback:", sbErr);
-      }
-    }
-
-    // 3. Static mock fallback
+    // 2. Static mock fallback
     return fallback;
   },
 
@@ -645,23 +588,6 @@ export const courseService = {
       }
     }
 
-    // Supabase fallback if configured
-    if (isSupabaseConfigured) {
-      try {
-        const { data: dbLesson, error } = await supabase
-          .from("lessons")
-          .select("*")
-          .eq("slug", lessonSlug)
-          .maybeSingle();
-
-        if (!error && dbLesson) {
-          return mapApiLessonToCourseLesson(dbLesson);
-        }
-      } catch (err) {
-        console.warn("Supabase fetchLessonBySlug error, searching fallback:", err);
-      }
-    }
-
     return null;
   },
 
@@ -683,7 +609,7 @@ export const courseService = {
       console.warn("NestJS API createCourse error, attempting fallback:", err);
     }
 
-    // 2. Supabase fallback if configured
+    // 2. Fallback to constructed course object if offline
     const courseId = data.id || `course_${Date.now()}`;
     const slug =
       data.slug ||
@@ -710,20 +636,6 @@ export const courseService = {
       learning_outcomes: data.learning_outcomes || [],
       created_at: new Date().toISOString(),
     };
-
-    if (isSupabaseConfigured) {
-      const { data: inserted, error } = await supabase
-        .from("courses")
-        .insert(newDbCourse)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Supabase createCourse error:", error);
-        throw new Error(error.message || "Failed to create course in database");
-      }
-      return mapDbToCourse(inserted as DbCourse, [], []);
-    }
 
     return mapDbToCourse(newDbCourse, [], []);
   },
@@ -767,42 +679,7 @@ export const courseService = {
       );
     }
 
-    // 2. Supabase fallback
-    const sanitizedUpdates: Partial<DbCourse> = { ...updates };
-    delete sanitizedUpdates.id;
-    delete (sanitizedUpdates as Partial<DbCourse> & { created_at?: string })
-      .created_at;
-
-    if (isSupabaseConfigured) {
-      let { data: updated, error } = await supabase
-        .from("courses")
-        .update(sanitizedUpdates)
-        .eq("id", target)
-        .select()
-        .maybeSingle();
-
-      if (!error && !updated) {
-        const res = await supabase
-          .from("courses")
-          .update(sanitizedUpdates)
-          .eq("slug", target)
-          .select()
-          .maybeSingle();
-        updated = res.data;
-        error = res.error;
-      }
-
-      if (error) {
-        console.error("Supabase updateCourse error:", error);
-        throw new Error(error.message || "Failed to update course in database");
-      }
-
-      if (updated) {
-        return mapDbToCourse(updated as DbCourse, [], []);
-      }
-    }
-
-    // 3. Local fallback
+    // 2. Local fallback
     const existing = await this.fetchCourseById(target);
     if (!existing) {
       throw new Error(`Course ${target} not found`);
@@ -853,32 +730,6 @@ export const courseService = {
         `NestJS API deleteCourse("${target}") error, attempting fallback:`,
         err
       );
-    }
-
-    // 2. Supabase fallback
-    if (isSupabaseConfigured) {
-      const { error, count } = await supabase
-        .from("courses")
-        .delete({ count: "exact" })
-        .eq("id", target);
-
-      if (error) {
-        console.warn("Supabase deleteCourse error by id:", error);
-      }
-
-      if (count === 0) {
-        const { error: slugError } = await supabase
-          .from("courses")
-          .delete()
-          .eq("slug", target);
-
-        if (slugError) {
-          console.error("Supabase deleteCourse error by slug:", slugError);
-          throw new Error(
-            slugError.message || "Failed to delete course from database"
-          );
-        }
-      }
     }
 
     return true;

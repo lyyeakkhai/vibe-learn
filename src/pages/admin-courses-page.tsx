@@ -20,7 +20,7 @@ import { courseService } from "@/services/course-service"
 import { CourseFormModal } from "@/components/admin/course-form-modal"
 import { DeleteConfirmModal } from "@/components/admin/delete-confirm-modal"
 import type { Course } from "@/types/courses"
-import type { DbCourse } from "@/lib/supabase"
+import type { DbCourse } from "@/types/db"
 import { CATEGORIES } from "@/types/courses"
 
 interface Toast {

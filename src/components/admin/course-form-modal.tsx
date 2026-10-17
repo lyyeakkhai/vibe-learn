@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { X, Image as ImageIcon, Loader2, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { DbCourse } from "@/lib/supabase"
+import type { DbCourse } from "@/types/db"
 import type { Course } from "@/types/courses"
 import { CATEGORIES } from "@/types/courses"
 
