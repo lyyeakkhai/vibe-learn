@@ -14,9 +14,18 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health check', () => {
+    it('should return health status with ok and service name', () => {
+      const result = appController.getHealth();
+      expect(result.status).toBe('ok');
+      expect(result.service).toBe('vibelearn-backend');
+      expect(typeof result.uptime).toBe('number');
+      expect(typeof result.timestamp).toBe('string');
+    });
+
+    it('should return health status on root /api', () => {
+      const result = appController.getRoot();
+      expect(result.status).toBe('ok');
     });
   });
 });
