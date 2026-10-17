@@ -54,6 +54,11 @@ This roadmap defines the strict order of implementation for the Vibelearn projec
 - [x] 4.4: **CHECKPOINT:** End-to-end testing: User can log in, watch a video, leave, and resume from the saved timestamp.
 - [x] 4.5: Build protected `/admin/courses` page with full course CRUD (Create, Read, Update, Delete) synced directly with Supabase. Includes `courseService.createCourse`, `updateCourse`, `deleteCourse` methods, `CourseFormModal`, `DeleteConfirmModal`, and "Manage Courses" navigation link for signed-in users.
 - [x] 4.6: Complete removal of static mock dataset (`mock-data.ts`), eliminate mock fallbacks in `courseService`, and wire all frontend views (`HomePage`, `CourseDetailPage`, `LearningPage`) with loading skeletons directly to the live NestJS backend API.
+- [x] 4.7: Environment variable validation with Zod across frontend (`src/config/env.ts`) and backend (`src/config/env.validation.ts`), ensuring fail-fast startup, strict type inference, and centralized configuration.
+- [x] 4.8: Integrate Cloudinary image storage for course cover images and instructor avatars in course management (NestJS `MediaModule`, `POST /api/media/upload` in-memory buffer streaming, and frontend `ImageUploader` component in `CourseFormModal`).
+- [x] 4.9: Role-Based Access Control (RBAC) & View Separation: Added `role` column (`'user' | 'admin'`) to PostgreSQL `users` table via migration, implemented `RolesGuard` and `@Roles('admin')` protecting course, module, and lesson mutation endpoints in NestJS, and added frontend `useUserRole` hook, `AdminRoute` with 403 `AccessDeniedPage`, and navigation gating.
+- [x] 4.10: Upload custom course logo images to Cloudinary and update Supabase course records (`cover_image_url`), synchronizing live database and seed assets (`supabase/seed.sql`, `backend/docs/seed.ndjson`).
+- [x] 4.11: Fix progress tracking course UUID vs slug resolution and validation: added bidirectional course UUID and slug lookup in NestJS backend (`ProgressModule`, `ProgressService`, `ProgressRepository`, `UpsertProgressDto`, `ToggleCompleteDto`) and aligned course identifier passing in frontend (`CourseDetailPage`, `LearningPage`).
 
 ## Phase 5: Deployment
 **Goal:** Deploy the application to production.

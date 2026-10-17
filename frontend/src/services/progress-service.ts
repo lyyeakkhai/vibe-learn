@@ -63,7 +63,7 @@ export const progressService = {
       const query = params.toString() ? `?${params.toString()}` : "";
       const data = await ApiClient.get<any[]>(`/progress${query}`, token);
 
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const results: UserProgressState[] = data.map(mapToUserProgressState);
 
         for (const item of results) {
@@ -104,7 +104,7 @@ export const progressService = {
       const query = params.toString() ? `?${params.toString()}` : "";
       const ids = await ApiClient.get<string[]>(`/progress/completed-ids${query}`, token);
 
-      if (Array.isArray(ids) && ids.length > 0) {
+      if (Array.isArray(ids)) {
         for (const id of ids) {
           if (localMap[id]) {
             localMap[id].isCompleted = true;

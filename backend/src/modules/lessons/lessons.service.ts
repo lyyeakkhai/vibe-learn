@@ -19,17 +19,23 @@ export class LessonsService {
   ): Promise<LessonDetailResponse> {
     const course = await this.coursesRepository.findBySlug(courseSlug);
     if (!course) {
-      throw new NotFoundException(`Course with slug '${courseSlug}' was not found`);
+      throw new NotFoundException(
+        `Course with slug '${courseSlug}' was not found`,
+      );
     }
 
-    const lesson = await this.lessonsRepository.findByCourseAndSlug(course.id, lessonSlug);
+    const lesson = await this.lessonsRepository.findByCourseAndSlug(
+      course.id,
+      lessonSlug,
+    );
     if (!lesson) {
       throw new NotFoundException(
         `Lesson with slug '${lessonSlug}' was not found in course '${courseSlug}'`,
       );
     }
 
-    const allOrderedLessons = await this.lessonsRepository.findCourseLessonsOrdered(course.id);
+    const allOrderedLessons =
+      await this.lessonsRepository.findCourseLessonsOrdered(course.id);
     const currentIndex = allOrderedLessons.findIndex((l) => l.id === lesson.id);
 
     const prev = currentIndex > 0 ? allOrderedLessons[currentIndex - 1] : null;
@@ -40,8 +46,12 @@ export class LessonsService {
 
     return {
       lesson,
-      previousLesson: prev ? { id: prev.id, slug: prev.slug, title: prev.title } : null,
-      nextLesson: next ? { id: next.id, slug: next.slug, title: next.title } : null,
+      previousLesson: prev
+        ? { id: prev.id, slug: prev.slug, title: prev.title }
+        : null,
+      nextLesson: next
+        ? { id: next.id, slug: next.slug, title: next.title }
+        : null,
     };
   }
 

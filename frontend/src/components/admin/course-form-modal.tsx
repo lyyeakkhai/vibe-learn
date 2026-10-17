@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Image as ImageIcon, Loader2, Sparkles } from "lucide-react"
+import { useAuth } from "@clerk/clerk-react"
+import { X, Loader2, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DbCourse } from "@/types/db"
 import type { Course } from "@/types/courses"
 import { CATEGORIES } from "@/types/courses"
+import { ImageUploader } from "@/components/common/image-uploader"
 
 const LEVEL_OPTIONS = ["beginner", "intermediate", "advanced"] as const
 
@@ -115,11 +117,18 @@ function CourseFormInner({
   onSave: (data: Partial<DbCourse>) => Promise<void>
 }) {
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const { getToken } = useAuth()
+  const [token, setToken] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [form, setForm] = useState<Partial<DbCourse>>(makeInitialForm(initialData))
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof DbCourse, string>>>({})
+
+  useEffect(() => {
+    getToken().then((t) => setToken(t)).catch(() => setToken(null))
+  }, [getToken])
 
   // Focus first input on mount (component remounts on each open)
   useEffect(() => {
@@ -332,51 +341,17 @@ function CourseFormInner({
         </div>
 
         {/* Cover Image */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Cover Image URL</label>
-          <input
-            type="text"
-            value={form.cover_image_url || ""}
-            onChange={(e) => setForm((prev) => ({ ...prev, cover_image_url: e.target.value }))}
-            placeholder="https://example.com/image.jpg or select below"
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-          />
-          {/* Quick presets */}
-          <div className="mt-2 flex flex-wrap gap-2">
-            {PRESET_IMAGES.map((preset) => (
-              <button
-                key={preset.value}
-                type="button"
-                onClick={() => setForm((prev) => ({ ...prev, cover_image_url: preset.value }))}
-                className={cn(
-                  "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  form.cover_image_url === preset.value
-                    ? "border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300"
-                    : "border-border bg-background text-neutral-600 hover:border-primary-400 hover:text-primary-600 dark:text-neutral-400"
-                )}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-          {/* Image preview */}
-          {form.cover_image_url && (
-            <div className="mt-3 flex items-center gap-3">
-              <div className="h-16 w-24 overflow-hidden rounded-lg border border-border bg-neutral-100 dark:bg-neutral-800">
-                <img
-                  src={form.cover_image_url}
-                  alt="Cover preview"
-                  className="h-full w-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                />
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <ImageIcon className="h-3.5 w-3.5" />
-                <span>Preview</span>
-              </div>
-            </div>
-          )}
-        </div>
+        <ImageUploader
+          label="Course Cover Image"
+          description="16:9 ratio recommended, PNG, JPG, or WebP up to 5MB"
+          aspectRatio="video"
+          value={form.cover_image_url || ""}
+          onChange={(url) => setForm((prev) => ({ ...prev, cover_image_url: url }))}
+          folder="courses"
+          token={token}
+          presets={PRESET_IMAGES}
+          onUploadStateChange={setIsUploadingImage}
+        />
 
         {/* Instructor */}
         <div className="rounded-lg border border-border bg-neutral-50 p-4 dark:bg-neutral-900/50">
@@ -392,16 +367,16 @@ function CourseFormInner({
                 className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/50"
               />
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Avatar URL</label>
-              <input
-                type="text"
-                value={form.instructor_avatar || ""}
-                onChange={(e) => setForm((prev) => ({ ...prev, instructor_avatar: e.target.value }))}
-                placeholder="https://example.com/avatar.jpg"
-                className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-              />
-            </div>
+            <ImageUploader
+              label="Instructor Avatar"
+              description="Square ratio recommended"
+              aspectRatio="square"
+              value={form.instructor_avatar || ""}
+              onChange={(url) => setForm((prev) => ({ ...prev, instructor_avatar: url }))}
+              folder="instructors"
+              token={token}
+              onUploadStateChange={setIsUploadingImage}
+            />
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">Bio</label>
               <textarea
@@ -452,7 +427,7 @@ function CourseFormInner({
           </button>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || isUploadingImage}
             className="inline-flex items-center gap-2 rounded-md bg-primary-500 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-600 active:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}

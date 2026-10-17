@@ -1,7 +1,13 @@
-import { IsUUID, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsNotEmpty,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 export class ToggleCompleteDto {
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   courseId: string;
 

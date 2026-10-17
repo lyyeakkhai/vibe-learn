@@ -1,10 +1,14 @@
 import { SignIn } from "@clerk/clerk-react"
 import { Link } from "react-router-dom"
-import { Sparkles } from "lucide-react"
+import { Sparkles, ShieldCheck } from "lucide-react"
 import { vibeLearnClerkAppearance } from "@/lib/clerk-appearance"
+import { env } from "@/config/env"
 import logoImg from "@/assets/logo.png"
 
 export function SignInPage() {
+  const demoEmail = env.VITE_DEMO_ADMIN_EMAIL || "vibelearn.admin@gmail.com"
+  const demoPassword = env.VITE_DEMO_ADMIN_PASSWORD || "VibeLearnAdmin2026!"
+
   return (
     <div className="relative flex min-h-[calc(100vh-72px)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-12 text-foreground">
       {/* Ambient background glow */}
@@ -50,6 +54,24 @@ export function SignInPage() {
           signUpUrl="/sign-up"
           appearance={vibeLearnClerkAppearance}
         />
+
+        {/* Demo Admin Credentials Box */}
+        <div className="mt-6 w-full rounded-2xl border border-primary-200/80 bg-primary-50/70 p-4 text-xs shadow-xs dark:border-primary-900/60 dark:bg-primary-950/40">
+          <div className="flex items-center gap-2 font-semibold text-primary-800 dark:text-primary-300">
+            <ShieldCheck className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+            <span>Public Demo Admin Login</span>
+          </div>
+          <div className="mt-2.5 space-y-1 font-mono text-neutral-800 dark:text-neutral-200">
+            <p className="flex items-center justify-between">
+              <span className="font-sans font-medium text-neutral-500 dark:text-neutral-400">Email:</span>
+              <span className="select-all font-semibold text-primary-700 dark:text-primary-300">{demoEmail}</span>
+            </p>
+            <p className="flex items-center justify-between">
+              <span className="font-sans font-medium text-neutral-500 dark:text-neutral-400">Password:</span>
+              <span className="select-all font-semibold text-primary-700 dark:text-primary-300">{demoPassword}</span>
+            </p>
+          </div>
+        </div>
 
         {/* Bottom reassurance */}
         <p className="mt-6 text-center font-sans text-xs text-muted-foreground">

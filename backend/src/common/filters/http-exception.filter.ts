@@ -30,7 +30,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (typeof exceptionResponse === 'string') {
       message = exceptionResponse;
-    } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+    } else if (
+      typeof exceptionResponse === 'object' &&
+      exceptionResponse !== null
+    ) {
       const resp = exceptionResponse as Record<string, any>;
       message = resp.message || message;
       error = resp.error || error;
@@ -38,10 +41,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status >= 500) {
       this.logger.error(
-        `[${request.method}] ${request.url}`,
+        `[${request.method}] ${request.url} [${status}]`,
         exception instanceof Error ? exception.stack : exception,
+      );
+    } else if (status >= 400) {
+      this.logger.warn(
+        `[${request.method}] ${request.url} [${status}] - ${JSON.stringify(message)}`,
       );
     }
 

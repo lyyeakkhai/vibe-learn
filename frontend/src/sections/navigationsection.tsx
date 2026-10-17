@@ -4,11 +4,13 @@ import { Bell, Menu, Moon, Sun, X } from "lucide-react"
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
+import { useUserRole } from "@/hooks/use-user-role"
 import logoImg from "@/assets/logo.png"
 
 export function NavigationSection() {
   const location = useLocation()
   const { theme, setTheme } = useTheme()
+  const { isAdmin } = useUserRole()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isCoursesActive =
@@ -67,7 +69,7 @@ export function NavigationSection() {
               )}
             </Link>
 
-            <SignedIn>
+            {isAdmin && (
               <Link
                 to="/admin/courses"
                 className={cn(
@@ -82,7 +84,7 @@ export function NavigationSection() {
                   <span className="absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full bg-primary-500" />
                 )}
               </Link>
-            </SignedIn>
+            )}
           </nav>
         </div>
 
@@ -172,7 +174,7 @@ export function NavigationSection() {
             >
               My Learning
             </Link>
-            <SignedIn>
+            {isAdmin && (
               <Link
                 to="/admin/courses"
                 onClick={() => setMobileMenuOpen(false)}
@@ -185,7 +187,7 @@ export function NavigationSection() {
               >
                 Manage Courses
               </Link>
-            </SignedIn>
+            )}
           </nav>
         </div>
       )}

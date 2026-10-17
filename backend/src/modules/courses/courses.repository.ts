@@ -27,7 +27,10 @@ export class CoursesRepository {
       );
     }
 
-    qb.orderBy('course.popular', 'DESC').addOrderBy('course.studentCount', 'DESC');
+    qb.orderBy('course.popular', 'DESC').addOrderBy(
+      'course.studentCount',
+      'DESC',
+    );
     return qb.getMany();
   }
 

@@ -6,7 +6,9 @@ import { CourseModule } from './entities/course-module.entity';
 
 @Injectable()
 export class CourseModulesService {
-  constructor(private readonly courseModulesRepository: CourseModulesRepository) {}
+  constructor(
+    private readonly courseModulesRepository: CourseModulesRepository,
+  ) {}
 
   async findByCourseId(courseId: string): Promise<CourseModule[]> {
     return this.courseModulesRepository.findByCourseId(courseId);

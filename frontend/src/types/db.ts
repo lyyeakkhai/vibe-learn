@@ -52,6 +52,7 @@ export interface DbUser {
   id: string;
   email: string | null;
   full_name: string | null;
+  role?: 'user' | 'admin';
   created_at: string;
 }
 

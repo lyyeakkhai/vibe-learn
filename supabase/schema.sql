@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     id TEXT PRIMARY KEY, -- Clerk User ID (e.g. user_2...)
     email TEXT,
     full_name TEXT,
+    role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 

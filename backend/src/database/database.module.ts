@@ -9,8 +9,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (config: ConfigService): TypeOrmModuleOptions => {
         const databaseUrl = config.get<string>('DATABASE_URL');
+        const dbSsl = config.get<boolean | string>('DB_SSL');
         const isSsl =
-          config.get<string>('DB_SSL') === 'true' ||
+          dbSsl === true ||
+          dbSsl === 'true' ||
           (databaseUrl ? databaseUrl.includes('supabase.com') : false);
 
         const baseOptions = {

@@ -1,7 +1,15 @@
-import { IsUUID, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class UpsertProgressDto {
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   courseId: string;
 

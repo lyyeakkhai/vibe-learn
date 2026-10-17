@@ -10,6 +10,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { CourseModulesModule } from './modules/course-modules/course-modules.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { ProgressModule } from './modules/progress/progress.module';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ProgressModule } from './modules/progress/progress.module';
     CourseModulesModule,
     LessonsModule,
     ProgressModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

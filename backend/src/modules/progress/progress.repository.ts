@@ -12,17 +12,32 @@ export class ProgressRepository {
   ) {}
 
   async findByUserId(userId: string, courseId?: string): Promise<Progress[]> {
-    const where: any = { userId };
+    const qb = this.repo
+      .createQueryBuilder('progress')
+      .where('progress.user_id = :userId', { userId });
+
     if (courseId) {
-      where.courseId = courseId;
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          courseId,
+        );
+      if (isUuid) {
+        qb.andWhere('progress.course_id = :courseId', { courseId });
+      } else {
+        qb.leftJoin('progress.course', 'course').andWhere(
+          'course.slug = :courseSlug',
+          { courseSlug: courseId },
+        );
+      }
     }
-    return this.repo.find({
-      where,
-      order: { updatedAt: 'DESC' },
-    });
+
+    return qb.orderBy('progress.updated_at', 'DESC').getMany();
   }
 
-  async findByUserAndLesson(userId: string, lessonId: string): Promise<Progress | null> {
+  async findByUserAndLesson(
+    userId: string,
+    lessonId: string,
+  ): Promise<Progress | null> {
     return this.repo.findOne({
       where: { userId, lessonId },
     });
@@ -33,7 +48,8 @@ export class ProgressRepository {
     dto: UpsertProgressDto,
   ): Promise<Progress> {
     const isCompleted = dto.isCompleted !== undefined ? dto.isCompleted : false;
-    const resumeTimestamp = dto.resumeTimestamp !== undefined ? dto.resumeTimestamp : 0;
+    const resumeTimestamp =
+      dto.resumeTimestamp !== undefined ? dto.resumeTimestamp : 0;
 
     await this.repo
       .createQueryBuilder()
