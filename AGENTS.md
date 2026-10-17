@@ -18,7 +18,7 @@ This document defines the strict operating rules, architectural guidelines, and 
 
 ---
 
-## 2. Mandatory NestJS CLI Generation Rule
+## 2. Mandatory NestJS CLI Generation & Folder Structure Rule
 
 > **MANDATORY:** For every feature module, agents MUST use the NestJS CLI resource command to scaffold the initial module structure to speed up delivery and guarantee consistent boilerplate:
 
@@ -34,6 +34,24 @@ Examples:
 After scaffolding via the CLI, immediately organize into the strict layered architecture:
 `Controller -> Service -> Repository -> Entity`
 
+### Mandatory Folder Layout for EVERY Module:
+Every feature module MUST contain these exact elements:
+```text
+src/modules/<resource-name>/
+├── <resource-name>.controller.ts      # HTTP routing, parameter extraction, and status codes
+├── <resource-name>.service.ts         # Pure business logic and domain orchestration
+├── <resource-name>.repository.ts      # All TypeORM database queries (isolated)
+├── <resource-name>.module.ts          # Dependency injection container for the module
+├── <resource-name>.service.spec.ts    # Unit tests
+├── dto/                               # Request/response validation with class-validator
+│   ├── create-<resource>.dto.ts
+│   └── update-<resource>.dto.ts
+├── entities/                          # TypeORM @Entity() database table mappings
+│   └── <resource>.entity.ts
+└── types/                             # TypeScript interfaces & domain types
+    └── <resource>.types.ts
+```
+
 ---
 
 ## 3. Architectural Rules & Separation of Concerns
@@ -42,7 +60,9 @@ After scaffolding via the CLI, immediately organize into the strict layered arch
    - **Controllers:** HTTP handling, routing, DTO extraction, calling services, returning explicit HTTP status codes. **NO business logic and NO direct database queries.**
    - **Services:** Pure business rules, domain orchestration, and calling repositories.
    - **Repositories:** Responsible for all TypeORM queries. **NO database queries outside of repositories.**
-   - **Entities:** TypeORM `@Entity()` definitions representing relational PostgreSQL tables.
+   - **DTOs (`dto/`):** Validating client requests via `class-validator` / `class-transformer`.
+   - **Entities (`entities/`):** TypeORM `@Entity()` definitions representing relational PostgreSQL tables.
+   - **Types (`types/`):** Domain interfaces, JSONB structures, and internal data shapes.
 
 2. **Explicit HTTP Status Codes:**
    Every controller method must return clear, accurate status codes:

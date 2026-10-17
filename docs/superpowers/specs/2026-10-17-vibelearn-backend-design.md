@@ -61,43 +61,63 @@ vibelearn-backend/
 │   │   ├── auth/                   # Clerk JWT validation & guards
 │   │   │   ├── auth.module.ts
 │   │   │   ├── clerk.service.ts
-│   │   │   └── guards/
-│   │   │       └── clerk-auth.guard.ts
+│   │   │   ├── guards/
+│   │   │   │   └── clerk-auth.guard.ts
+│   │   │   └── types/
+│   │   │       └── auth.types.ts
 │   │   ├── users/                  # User management & synchronization
 │   │   │   ├── users.module.ts
 │   │   │   ├── users.controller.ts
 │   │   │   ├── users.service.ts
 │   │   │   ├── users.repository.ts
-│   │   │   └── entities/user.entity.ts
+│   │   │   ├── entities/user.entity.ts
+│   │   │   ├── dto/
+│   │   │   │   └── sync-user.dto.ts
+│   │   │   └── types/
+│   │   │       └── user.types.ts
 │   │   ├── courses/                # Course catalog & administration
 │   │   │   ├── courses.module.ts
 │   │   │   ├── courses.controller.ts
 │   │   │   ├── courses.service.ts
 │   │   │   ├── courses.repository.ts
 │   │   │   ├── entities/course.entity.ts
-│   │   │   └── dto/
-│   │   │       ├── create-course.dto.ts
-│   │   │       ├── update-course.dto.ts
-│   │   │       └── query-courses.dto.ts
-│   │   ├── modules/                # Course modules grouping
+│   │   │   ├── dto/
+│   │   │   │   ├── create-course.dto.ts
+│   │   │   │   ├── update-course.dto.ts
+│   │   │   │   └── query-courses.dto.ts
+│   │   │   └── types/
+│   │   │       └── course.types.ts
+│   │   ├── course-modules/         # Course modules grouping
 │   │   │   ├── course-modules.module.ts
 │   │   │   ├── course-modules.service.ts
 │   │   │   ├── course-modules.repository.ts
-│   │   │   └── entities/module.entity.ts
+│   │   │   ├── entities/course-module.entity.ts
+│   │   │   ├── dto/
+│   │   │   │   ├── create-course-module.dto.ts
+│   │   │   │   └── update-course-module.dto.ts
+│   │   │   └── types/
+│   │   │       └── course-module.types.ts
 │   │   ├── lessons/                # Lesson content, notes, resources
 │   │   │   ├── lessons.module.ts
 │   │   │   ├── lessons.controller.ts
 │   │   │   ├── lessons.service.ts
 │   │   │   ├── lessons.repository.ts
-│   │   │   └── entities/lesson.entity.ts
+│   │   │   ├── entities/lesson.entity.ts
+│   │   │   ├── dto/
+│   │   │   │   ├── create-lesson.dto.ts
+│   │   │   │   └── update-lesson.dto.ts
+│   │   │   └── types/
+│   │   │       └── lesson.types.ts
 │   │   └── progress/               # Progress tracking & video resume
 │   │       ├── progress.module.ts
 │   │       ├── progress.controller.ts
 │   │       ├── progress.service.ts
 │   │       ├── progress.repository.ts
 │   │       ├── entities/progress.entity.ts
-│   │       └── dto/
-│   │           └── upsert-progress.dto.ts
+│   │       ├── dto/
+│   │       │   └── upsert-progress.dto.ts
+│   │       └── types/
+│   │           └── progress.types.ts
 │   ├── app.module.ts               # Root application module
 │   └── main.ts                     # Bootstrap, validation pipe & global prefix (/api)
 ```

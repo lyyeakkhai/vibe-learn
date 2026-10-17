@@ -424,6 +424,8 @@ git commit -m "feat: implement auth module with clerk token verification and gua
 **Files:**
 - Generate: `pnpm exec nest g resource modules/users --no-spec`
 - Create: `src/modules/users/entities/user.entity.ts`
+- Create: `src/modules/users/types/user.types.ts`
+- Create: `src/modules/users/dto/sync-user.dto.ts`
 - Create: `src/modules/users/users.repository.ts`
 - Modify: `src/modules/users/users.service.ts`
 - Modify: `src/modules/users/users.controller.ts`
@@ -498,10 +500,15 @@ git commit -m "feat: implement users module with typeorm entity, repository, and
 - Generate: `pnpm exec nest g resource modules/course-modules --no-spec`
 - Create: `src/modules/courses/entities/course.entity.ts`
 - Create: `src/modules/course-modules/entities/course-module.entity.ts`
+- Create: `src/modules/courses/types/course.types.ts`
+- Create: `src/modules/course-modules/types/course-module.types.ts`
 - Create: `src/modules/courses/courses.repository.ts`
+- Create: `src/modules/course-modules/course-modules.repository.ts`
 - Create: `src/modules/courses/dto/create-course.dto.ts`
 - Create: `src/modules/courses/dto/update-course.dto.ts`
 - Create: `src/modules/courses/dto/query-courses.dto.ts`
+- Create: `src/modules/course-modules/dto/create-course-module.dto.ts`
+- Create: `src/modules/course-modules/dto/update-course-module.dto.ts`
 - Modify: `src/modules/courses/courses.service.ts`
 - Modify: `src/modules/courses/courses.controller.ts`
 
@@ -545,6 +552,9 @@ git commit -m "feat: implement courses and course-modules with relations, reposi
 **Files:**
 - Generate: `pnpm exec nest g resource modules/lessons --no-spec`
 - Create: `src/modules/lessons/entities/lesson.entity.ts`
+- Create: `src/modules/lessons/types/lesson.types.ts`
+- Create: `src/modules/lessons/dto/create-lesson.dto.ts`
+- Create: `src/modules/lessons/dto/update-lesson.dto.ts`
 - Create: `src/modules/lessons/lessons.repository.ts`
 - Modify: `src/modules/lessons/lessons.service.ts`
 - Modify: `src/modules/lessons/lessons.controller.ts`
@@ -582,6 +592,7 @@ git commit -m "feat: implement lessons module with detailed content and curricul
 **Files:**
 - Generate: `pnpm exec nest g resource modules/progress --no-spec`
 - Create: `src/modules/progress/entities/progress.entity.ts`
+- Create: `src/modules/progress/types/progress.types.ts`
 - Create: `src/modules/progress/progress.repository.ts`
 - Create: `src/modules/progress/dto/upsert-progress.dto.ts`
 - Modify: `src/modules/progress/progress.service.ts`
