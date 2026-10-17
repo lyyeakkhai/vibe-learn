@@ -69,7 +69,7 @@ export class ClerkAuthGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      this.logger.error(`Clerk authentication failure: ${error?.message || error}`);
+      this.logger.warn(`Clerk authentication failure: ${error?.message || error}`);
       throw new UnauthorizedException('Invalid or expired authentication token');
     }
   }
