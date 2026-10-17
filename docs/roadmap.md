@@ -56,6 +56,7 @@ This roadmap defines the strict order of implementation for the Vibelearn projec
 - [x] 4.6: Complete removal of static mock dataset (`mock-data.ts`), eliminate mock fallbacks in `courseService`, and wire all frontend views (`HomePage`, `CourseDetailPage`, `LearningPage`) with loading skeletons directly to the live NestJS backend API.
 - [x] 4.7: Environment variable validation with Zod across frontend (`src/config/env.ts`) and backend (`src/config/env.validation.ts`), ensuring fail-fast startup, strict type inference, and centralized configuration.
 - [x] 4.8: Integrate Cloudinary image storage for course cover images and instructor avatars in course management (NestJS `MediaModule`, `POST /api/media/upload` in-memory buffer streaming, and frontend `ImageUploader` component in `CourseFormModal`).
+- [x] 4.9: Role-Based Access Control (RBAC) & View Separation: Added `role` column (`'user' | 'admin'`) to PostgreSQL `users` table via migration, implemented `RolesGuard` and `@Roles('admin')` protecting course, module, and lesson mutation endpoints in NestJS, and added frontend `useUserRole` hook, `AdminRoute` with 403 `AccessDeniedPage`, and navigation gating.
 
 ## Phase 5: Deployment
 **Goal:** Deploy the application to production.
