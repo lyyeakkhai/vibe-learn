@@ -3,7 +3,6 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
-  UseGuards,
   Query,
   BadRequestException,
   HttpCode,
@@ -12,8 +11,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { UploadImageResponseDto } from './dto/upload-image-response.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
-
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
   'image/png',
@@ -29,7 +26,6 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post('upload')
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {

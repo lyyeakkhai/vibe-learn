@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Progress } from '../../progress/entities/progress.entity';
 
@@ -15,8 +16,25 @@ export class User {
   @PrimaryColumn('varchar', { length: 255 })
   id: string; // User ID
 
-  @Column('varchar', { length: 255, nullable: true })
-  email: string | null;
+  @Index('idx_users_email', { unique: true })
+  @Column('varchar', { length: 255, unique: true, nullable: false })
+  email: string;
+
+  @Column('varchar', {
+    length: 255,
+    nullable: true,
+    select: false,
+    name: 'password_hash',
+  })
+  passwordHash: string | null;
+
+  @Column('varchar', {
+    length: 255,
+    nullable: true,
+    select: false,
+    name: 'hashed_refresh_token',
+  })
+  hashedRefreshToken: string | null;
 
   @Column('varchar', { length: 255, nullable: true, name: 'full_name' })
   fullName: string | null;

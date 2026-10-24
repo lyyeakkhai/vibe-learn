@@ -16,20 +16,22 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { QueryCoursesDto } from './dto/query-courses.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
+  @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(@Query() query: QueryCoursesDto) {
     return this.coursesService.findAll(query);
   }
 
+  @Public()
   @Get(':slug')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('slug') slug: string) {
@@ -37,7 +39,7 @@ export class CoursesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createCourseDto: CreateCourseDto) {
@@ -45,7 +47,7 @@ export class CoursesController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async update(
@@ -56,7 +58,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: string) {

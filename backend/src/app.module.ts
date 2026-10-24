@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -11,7 +12,8 @@ import { CourseModulesModule } from './modules/course-modules/course-modules.mod
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { MediaModule } from './modules/media/media.module';
-import { AuthModuleModule } from './auth-module/auth-module.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -32,9 +34,15 @@ import { AuthModuleModule } from './auth-module/auth-module.module';
     LessonsModule,
     ProgressModule,
     MediaModule,
-    AuthModuleModule,
+    AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

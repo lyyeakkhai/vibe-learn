@@ -44,6 +44,14 @@ export const envSchema = z.object({
   DB_SYNCHRONIZE: booleanCoerce,
   DB_LOGGING: booleanCoerce,
 
+  // JWT Authentication Configuration
+  JWT_SECRET: z.string().default('vibelearn_super_secret_jwt_access_key_2026'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .default('vibelearn_super_secret_jwt_refresh_key_2026'),
+  JWT_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+
   // Cloudinary (Optional Media Storage)
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
