@@ -1,12 +1,12 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Sparkles, ShieldCheck, UserCheck, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import { Sparkles, ArrowRight, Loader2, AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import logoImg from "@/assets/logo.png"
 
 export function SignInPage() {
   const navigate = useNavigate()
-  const { login, quickDemoLogin } = useAuth()
+  const { login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -24,15 +24,6 @@ export function SignInPage() {
       setError(err?.message || "Invalid credentials. Please try again.")
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleQuickLogin = (role: "admin" | "learner") => {
-    quickDemoLogin(role)
-    if (role === "admin") {
-      navigate("/admin/courses")
-    } else {
-      navigate("/courses")
     }
   }
 
@@ -138,37 +129,6 @@ export function SignInPage() {
             >
               Sign Up
             </Link>
-          </div>
-
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-200 dark:border-neutral-800" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-neutral-500 dark:text-neutral-400">
-                Or quick test login
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Login Buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin("admin")}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary-200 bg-primary-50/50 px-3 py-2 text-xs font-medium text-primary-700 transition hover:bg-primary-100 dark:border-primary-900/60 dark:bg-primary-950/40 dark:text-primary-300"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Demo Admin</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin("learner")}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-            >
-              <UserCheck className="h-3.5 w-3.5" />
-              <span>Demo Learner</span>
-            </button>
           </div>
         </div>
 

@@ -25,7 +25,6 @@ interface AuthContextType {
     fullName?: string,
   ) => Promise<{ id: string; email: string }>;
   logout: () => Promise<void>;
-  quickDemoLogin: (role: "admin" | "learner") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,32 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const quickDemoLogin = (role: "admin" | "learner") => {
-    if (role === "admin") {
-      persistAuth(
-        {
-          id: "mock_user_admin",
-          email: "admin@vibelearn.io",
-          fullName: "Admin User",
-          role: "admin",
-          publicMetadata: { role: "admin" },
-        },
-        "mock_user_admin",
-      );
-    } else {
-      persistAuth(
-        {
-          id: "mock_user_learner",
-          email: "learner@vibelearn.io",
-          fullName: "Alex Learner",
-          role: "user",
-          publicMetadata: { role: "user" },
-        },
-        "mock_user_test",
-      );
-    }
-  };
-
   const getToken = async (): Promise<string | null> => {
     return token || user?.id || null;
   };
@@ -161,7 +134,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
-        quickDemoLogin,
       }}
     >
       {children}
@@ -182,7 +154,6 @@ export function useAuth() {
     login: context.login,
     signup: context.signup,
     logout: context.logout,
-    quickDemoLogin: context.quickDemoLogin,
   };
 }
 
