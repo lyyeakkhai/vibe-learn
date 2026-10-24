@@ -6,6 +6,7 @@ import { Course } from '../modules/courses/entities/course.entity';
 import { CourseModule } from '../modules/course-modules/entities/course-module.entity';
 import { Lesson } from '../modules/lessons/entities/lesson.entity';
 import { Progress } from '../modules/progress/entities/progress.entity';
+import { Todo } from '../modules/todos/entities/todo.entity';
 
 dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
@@ -17,7 +18,7 @@ const isSslRequired =
   (databaseUrl ? databaseUrl.includes('supabase.com') : false);
 
 const baseOptions = {
-  entities: [User, Course, CourseModule, Lesson, Progress],
+  entities: [User, Course, CourseModule, Lesson, Progress, Todo],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false,
   ssl: isSslRequired ? { rejectUnauthorized: false } : false,

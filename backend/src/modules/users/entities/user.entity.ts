@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Progress } from '../../progress/entities/progress.entity';
+import { Todo } from '../../todos/entities/todo.entity';
 
 export type UserRole = 'user' | 'admin';
 
@@ -15,8 +17,25 @@ export class User {
   @PrimaryColumn('varchar', { length: 255 })
   id: string; // User ID
 
-  @Column('varchar', { length: 255, nullable: true })
-  email: string | null;
+  @Index('idx_users_email', { unique: true })
+  @Column('varchar', { length: 255, unique: true, nullable: false })
+  email: string;
+
+  @Column('varchar', {
+    length: 255,
+    nullable: true,
+    select: false,
+    name: 'password_hash',
+  })
+  passwordHash: string | null;
+
+  @Column('varchar', {
+    length: 255,
+    nullable: true,
+    select: false,
+    name: 'hashed_refresh_token',
+  })
+  hashedRefreshToken: string | null;
 
   @Column('varchar', { length: 255, nullable: true, name: 'full_name' })
   fullName: string | null;
@@ -26,6 +45,9 @@ export class User {
 
   @OneToMany(() => Progress, (progress) => progress.user)
   progress: Progress[];
+
+  @OneToMany(() => Todo, (todo) => todo.owner)
+  todos: Todo[];
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
