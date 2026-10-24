@@ -1,22 +1,37 @@
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Bell, Menu, Moon, Sun, X } from "lucide-react"
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
+import { Bell, Menu, Moon, Sun, X, LogOut, User as UserIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import { useUserRole } from "@/hooks/use-user-role"
+import { SignedIn, SignedOut, useAuth, useUser } from "@/contexts/auth-context"
 import logoImg from "@/assets/logo.png"
 
 export function NavigationSection() {
   const location = useLocation()
   const { theme, setTheme } = useTheme()
   const { isAdmin } = useUserRole()
+  const { user } = useUser()
+  const { logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
   const isCoursesActive =
     location.pathname.startsWith("/courses") || location.pathname.startsWith("/course")
   const isMyLearningActive = location.pathname.startsWith("/my-learning")
   const isAdminCoursesActive = location.pathname.startsWith("/admin/courses")
+
+  const initials =
+    user?.fullName
+      ? user.fullName
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2)
+      : user?.email
+        ? user.email[0].toUpperCase()
+        : "U"
 
   return (
     <header className="sticky top-0 z-50 h-[72px] border-b border-neutral-200 bg-white/90 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/90">
@@ -113,24 +128,65 @@ export function NavigationSection() {
           {/* User Profile Avatar / Auth Buttons */}
           <div className="flex items-center">
             <SignedIn>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "size-10 ring-2 ring-primary-500/20",
-                  },
-                }}
-              />
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
+              <div className="relative">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-600 active:bg-primary-700"
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex size-10 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700 ring-2 ring-primary-500/20 transition hover:scale-105 dark:bg-primary-950 dark:text-primary-300"
+                  aria-label="User menu"
                 >
-                  Sign In
+                  {initials}
                 </button>
-              </SignInButton>
+
+                {profileDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="border-b border-neutral-100 px-3 py-2.5 dark:border-neutral-800">
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+                          {user?.fullName || "Learner"}
+                        </p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          {user?.email || user?.id}
+                        </p>
+                      </div>
+
+                      <div className="p-1 space-y-1">
+                        <Link
+                          to="/my-learning"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        >
+                          <UserIcon className="h-4 w-4" />
+                          <span>My Learning</span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileDropdownOpen(false)
+                            logout()
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/40"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </SignedIn>
+            <SignedOut>
+              <Link
+                to="/sign-in"
+                className="inline-flex items-center justify-center rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-600 active:bg-primary-700"
+              >
+                Sign In
+              </Link>
             </SignedOut>
           </div>
 
@@ -194,4 +250,5 @@ export function NavigationSection() {
     </header>
   )
 }
+
 export default NavigationSection

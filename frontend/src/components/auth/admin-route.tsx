@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { useUser, RedirectToSignIn } from "@clerk/clerk-react";
 import { Loader2 } from "lucide-react";
+import { useUser, RedirectToSignIn } from "@/contexts/auth-context";
 import { useUserRole } from "@/hooks/use-user-role";
 import { AccessDeniedPage } from "@/pages/access-denied-page";
 

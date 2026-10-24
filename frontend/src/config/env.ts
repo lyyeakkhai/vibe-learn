@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  VITE_CLERK_PUBLISHABLE_KEY: z
-    .string({ message: 'VITE_CLERK_PUBLISHABLE_KEY is required' })
-    .min(1, 'VITE_CLERK_PUBLISHABLE_KEY cannot be empty')
-    .startsWith('pk_', 'VITE_CLERK_PUBLISHABLE_KEY must start with "pk_"'),
   VITE_API_URL: z
     .string()
     .optional()

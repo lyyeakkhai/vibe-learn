@@ -12,7 +12,7 @@ This document defines the strict operating rules, architectural guidelines, and 
 - **ORM:** TypeORM 0.3+ with `@nestjs/typeorm`
 - **Database:** PostgreSQL 16 running in Docker (OrbStack)
 - **Port Mapping:** Host `5433:5432` (avoids conflicting with other local containers on 5432)
-- **Authentication:** Clerk using `@clerk/backend` with Bearer JWT verification & Just-in-Time user synchronization
+- **Authentication:** Custom Course Authentication with Bearer JWT verification & Just-in-Time user synchronization
 - **Validation:** `class-validator` & `class-transformer`
 - **Package Manager:** `pnpm`
 
@@ -94,7 +94,7 @@ src/modules/<resource-name>/
 
 ## 4. Authentication & Security Flow
 
-- Route protection is enforced via `ClerkAuthGuard` using `@clerk/backend`.
+- Route protection is enforced via `AuthGuard`.
 - Public routes (`GET /api/courses`, `GET /api/courses/:slug`, `GET /api/lessons/:id`) are open.
 - Protected routes (`/api/progress/*`, `/api/users/me`, Admin endpoints) require `Authorization: Bearer <token>`.
 - Just-in-Time (JIT) user synchronization ensures that when a valid token arrives, the user record is automatically created or verified in the local PostgreSQL `users` table.

@@ -13,7 +13,7 @@ export type UserRole = 'user' | 'admin';
 @Entity('users')
 export class User {
   @PrimaryColumn('varchar', { length: 255 })
-  id: string; // Clerk User ID (e.g. user_2...)
+  id: string; // User ID
 
   @Column('varchar', { length: 255, nullable: true })
   email: string | null;

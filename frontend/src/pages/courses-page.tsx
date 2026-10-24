@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "@/contexts/auth-context"
 import { CourseCard } from "@/components/common/course-card"
 import { courseService } from "@/services/course-service"
 import { progressService, type UserProgressState } from "@/services/progress-service"

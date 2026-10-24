@@ -12,12 +12,12 @@ import {
 import { ProgressService } from './progress.service';
 import { UpsertProgressDto } from './dto/upsert-progress.dto';
 import { ToggleCompleteDto } from './dto/toggle-complete.dto';
-import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 
 @Controller('progress')
-@UseGuards(ClerkAuthGuard)
+@UseGuards(AuthGuard)
 export class ProgressController {
   constructor(private readonly progressService: ProgressService) {}
 
