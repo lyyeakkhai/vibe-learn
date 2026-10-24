@@ -11,7 +11,6 @@ import { CourseModulesModule } from './modules/course-modules/course-modules.mod
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { MediaModule } from './modules/media/media.module';
-import { AuthModuleModule } from './auth-module/auth-module.module';
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { AuthModuleModule } from './auth-module/auth-module.module';
     LessonsModule,
     ProgressModule,
     MediaModule,
-    AuthModuleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
