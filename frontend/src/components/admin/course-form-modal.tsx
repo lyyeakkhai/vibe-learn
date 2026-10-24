@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useAuth } from "@clerk/clerk-react"
+import { useAuth } from "@/contexts/auth-context"
 import { X, Loader2, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DbCourse } from "@/types/db"

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "@/contexts/auth-context"
 import {
   Plus,
   Search,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useParams } from "react-router-dom"
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "@/contexts/auth-context"
 import { courseService } from "@/services/course-service"
 import { progressService, type UserProgressState } from "@/services/progress-service"
 import {

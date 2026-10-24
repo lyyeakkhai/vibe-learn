@@ -4,7 +4,7 @@ import type { DbUser } from "../types/db";
 export type { DbUser };
 
 export interface SyncUserData {
-  id: string; // Clerk User ID
+  id: string; // User ID
   email?: string;
   fullName?: string;
 }
@@ -22,7 +22,7 @@ export interface UserProfile {
 
 export const userService = {
   /**
-   * Sync Clerk user data into PostgreSQL via NestJS backend
+   * Sync user data into PostgreSQL via NestJS backend
    * Endpoint: POST /users/sync
    */
   async syncUser(userData: SyncUserData, token?: string): Promise<DbUser | null> {
@@ -41,7 +41,7 @@ export const userService = {
       if (userData.email) payload.email = userData.email;
       if (userData.fullName) payload.fullName = userData.fullName;
 
-      // Use explicit token, current ApiClient auth token, or Clerk user ID in dev/mock environments
+      // Use explicit token, current ApiClient auth token, or user ID in dev/mock environments
       const authToken =
         token ||
         ApiClient.getAuthToken() ||
@@ -102,19 +102,19 @@ export const userService = {
   },
 
   /**
-   * Retrieve a user by Clerk ID
+   * Retrieve a user by ID
    */
-  async getUserById(clerkUserId: string, token?: string): Promise<DbUser | null> {
-    if (!clerkUserId) return null;
+  async getUserById(userId: string, token?: string): Promise<DbUser | null> {
+    if (!userId) return null;
 
     try {
       const authToken =
         token ||
         ApiClient.getAuthToken() ||
-        (clerkUserId.startsWith("user_") ? clerkUserId : undefined);
+        (userId.startsWith("user_") ? userId : undefined);
 
       const profile = await this.getMe(authToken);
-      if (profile && (!clerkUserId || profile.id === clerkUserId)) {
+      if (profile && (!userId || profile.id === userId)) {
         return {
           id: profile.id,
           email: profile.email,

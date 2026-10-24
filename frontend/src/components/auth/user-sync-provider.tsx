@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@/contexts/auth-context";
 import { userService } from "@/services/user-service";
 import { ApiClient } from "@/lib/api-client";
 
@@ -20,7 +20,7 @@ export function UserSyncProvider({ children }: UserSyncProviderProps) {
       return;
     }
 
-    // Register Clerk's dynamic token getter so ApiClient requests always have fresh, unexpired tokens
+    // Register dynamic token getter so ApiClient requests always have fresh tokens
     ApiClient.setTokenGetter(() => getToken());
 
     const currentUser = user;
@@ -39,7 +39,7 @@ export function UserSyncProvider({ children }: UserSyncProviderProps) {
         await userService.syncUser(
           {
             id: currentUser.id,
-            email: currentUser.primaryEmailAddress?.emailAddress,
+            email: currentUser.primaryEmailAddress?.emailAddress || currentUser.email,
             fullName:
               currentUser.fullName ||
               `${currentUser.firstName || ""}`.trim() ||
@@ -48,7 +48,7 @@ export function UserSyncProvider({ children }: UserSyncProviderProps) {
           token || undefined,
         );
       } catch (err) {
-        console.warn("Failed to sync Clerk user with database:", err);
+        console.warn("Failed to sync user with database:", err);
       }
     }
 

@@ -1,10 +1,34 @@
-import { SignUp } from "@clerk/clerk-react"
-import { Link } from "react-router-dom"
-import { Rocket } from "lucide-react"
-import { vibeLearnClerkAppearance } from "@/lib/clerk-appearance"
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Rocket, ArrowRight, Loader2 } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 import logoImg from "@/assets/logo.png"
 
 export function SignUpPage() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setTimeout(() => {
+      login(
+        {
+          id: `user_${Date.now()}`,
+          email: email || "learner@vibelearn.io",
+          fullName: fullName || "Learner",
+        },
+        `mock_user_${Date.now()}`
+      )
+      setLoading(false)
+      navigate("/courses")
+    }, 400)
+  }
+
   return (
     <div className="relative flex min-h-[calc(100vh-72px)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-12 text-foreground">
       {/* Ambient background glow */}
@@ -43,13 +67,79 @@ export function SignUpPage() {
           </p>
         </div>
 
-        {/* Clerk Sign Up component */}
-        <SignUp
-          path="/sign-up"
-          routing="path"
-          signInUrl="/sign-in"
-          appearance={vibeLearnClerkAppearance}
-        />
+        {/* Sign Up Form Card */}
+        <div className="w-full rounded-2xl border border-neutral-200 bg-card p-6 shadow-md dark:border-neutral-800">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Jane Doe"
+                className="mt-1.5 w-full rounded-lg border border-neutral-300 bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-1.5 w-full rounded-lg border border-neutral-300 bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="mt-1.5 w-full rounded-lg border border-neutral-300 bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-600 active:bg-primary-700 disabled:opacity-50"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-4 text-center">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              Already have an account?{" "}
+            </span>
+            <Link
+              to="/sign-in"
+              className="text-xs font-semibold text-primary-500 hover:underline"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
 
         {/* Bottom reassurance */}
         <p className="mt-6 text-center font-sans text-xs text-muted-foreground">

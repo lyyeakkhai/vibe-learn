@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react"
+import { SignedIn, SignedOut, RedirectToSignIn } from "@/contexts/auth-context"
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   return (

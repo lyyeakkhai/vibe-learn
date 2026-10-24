@@ -43,10 +43,6 @@ export const envSchema = z.object({
   DB_SSL: booleanCoerce,
   DB_SYNCHRONIZE: booleanCoerce,
   DB_LOGGING: booleanCoerce,
-  CLERK_SECRET_KEY: z
-    .string({ message: 'CLERK_SECRET_KEY is required' })
-    .min(1, 'CLERK_SECRET_KEY cannot be empty'),
-  CLERK_PUBLISHABLE_KEY: z.string().optional(),
 
   // Cloudinary (Optional Media Storage)
   CLOUDINARY_CLOUD_NAME: z.string().optional(),

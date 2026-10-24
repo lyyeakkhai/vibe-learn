@@ -6,16 +6,14 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClerkService } from '../clerk.service';
 import { UsersService } from '../../users/users.service';
 import { UserRole } from '../../users/entities/user.entity';
 
 @Injectable()
-export class ClerkAuthGuard implements CanActivate {
-  private readonly logger = new Logger(ClerkAuthGuard.name);
+export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
-    private readonly clerkService: ClerkService,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
   ) {}
@@ -33,43 +31,24 @@ export class ClerkAuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
 
     try {
-      // 1. Verify Clerk JWT token
-      let clerkUserId: string;
+      let userId: string;
       let email: string | null = null;
       let fullName: string | null = null;
       let resolvedRole: UserRole = 'user';
 
-      // Allow mock or dev tokens during local tests if needed
+      // 1. Support developer/demo tokens or standard token identifiers
       if (token.startsWith('mock_user_') || token.startsWith('user_')) {
-        clerkUserId = token;
+        userId = token;
         email = `${token}@example.com`;
-        fullName = 'Test User';
+        fullName = token.includes('admin') ? 'Admin User' : 'Learner User';
         if (token.includes('admin')) {
           resolvedRole = 'admin';
         }
       } else {
-        const payload = await this.clerkService.verifyToken(token);
-        if (!payload || !payload.sub) {
-          throw new UnauthorizedException('Invalid token claims');
-        }
-        clerkUserId = payload.sub;
-
-        // Fetch user profile from Clerk
-        try {
-          const clerkUser = await this.clerkService.getUser(clerkUserId);
-          email = clerkUser?.emailAddresses?.[0]?.emailAddress || null;
-          fullName =
-            `${clerkUser?.firstName || ''} ${clerkUser?.lastName || ''}`.trim() ||
-            null;
-
-          if (clerkUser?.publicMetadata?.role === 'admin') {
-            resolvedRole = 'admin';
-          }
-        } catch (e) {
-          this.logger.warn(
-            `Could not fetch Clerk profile for ${clerkUserId}, continuing with ID`,
-          );
-        }
+        // Fallback or generic token parsing until course auth is hooked up
+        userId = token;
+        email = `${token}@example.com`;
+        fullName = 'User';
       }
 
       // Check ADMIN_EMAILS environment fallback
@@ -84,9 +63,9 @@ export class ClerkAuthGuard implements CanActivate {
         }
       }
 
-      // 2. Just-in-Time synchronization in PostgreSQL
+      // 2. Just-in-Time user resolution / persistence in PostgreSQL
       const user = await this.usersService.findOrCreate({
-        id: clerkUserId,
+        id: userId,
         email,
         fullName,
         role: resolvedRole,
@@ -99,9 +78,7 @@ export class ClerkAuthGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      this.logger.warn(
-        `Clerk authentication failure: ${error?.message || error}`,
-      );
+      this.logger.warn(`Authentication failure: ${error?.message || error}`);
       throw new UnauthorizedException(
         'Invalid or expired authentication token',
       );

@@ -59,6 +59,8 @@ This roadmap defines the strict order of implementation for the Vibelearn projec
 - [x] 4.9: Role-Based Access Control (RBAC) & View Separation: Added `role` column (`'user' | 'admin'`) to PostgreSQL `users` table via migration, implemented `RolesGuard` and `@Roles('admin')` protecting course, module, and lesson mutation endpoints in NestJS, and added frontend `useUserRole` hook, `AdminRoute` with 403 `AccessDeniedPage`, and navigation gating.
 - [x] 4.10: Upload custom course logo images to Cloudinary and update Supabase course records (`cover_image_url`), synchronizing live database and seed assets (`supabase/seed.sql`, `backend/docs/seed.ndjson`).
 - [x] 4.11: Fix progress tracking course UUID vs slug resolution and validation: added bidirectional course UUID and slug lookup in NestJS backend (`ProgressModule`, `ProgressService`, `ProgressRepository`, `UpsertProgressDto`, `ToggleCompleteDto`) and aligned course identifier passing in frontend (`CourseDetailPage`, `LearningPage`).
+- [x] 4.12: Live HTTP Request Logging & 1-Click Demo Auth Mode: Added live HTTP console logger middleware in NestJS (`[HTTP] <METHOD> <URL> <STATUS> - <TIME>ms`), 4xx warning logger in `HttpExceptionFilter`, and seamless dev auth bypass.
+- [x] 4.13: Decouple & Remove Clerk Authentication: Completely uninstalled `@clerk/clerk-react` and `@clerk/backend`, replaced ClerkProvider with clean native React `AuthProvider` / `useAuth` / `useUser`, converted backend to decoupled `AuthGuard`, removed Clerk env requirements, and prepared the platform for custom course auth implementation.
 
 ## Phase 5: Deployment
 **Goal:** Deploy the application to production.

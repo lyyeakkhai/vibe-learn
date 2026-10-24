@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { useUser } from "@clerk/clerk-react"
+import { useUser } from "@/contexts/auth-context"
 import { HeroSection } from "@/sections/herosection"
 import { CourseSection } from "@/sections/coursesection"
 import { ShowcaseSection } from "@/sections/showcasesection"

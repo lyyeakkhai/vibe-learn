@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@/contexts/auth-context";
 import { userService } from "@/services/user-service";
 
 export type RoleType = "admin" | "user";
@@ -17,13 +17,13 @@ export function useUserRole(): UserRoleResult {
   const [dbRole, setDbRole] = useState<RoleType | null>(null);
   const [loadingDb, setLoadingDb] = useState(false);
 
-  // 1. Instant check from Clerk's publicMetadata
-  const clerkMetadataRole = (user?.publicMetadata?.role as RoleType) || null;
+  // 1. Instant check from user's publicMetadata
+  const userMetadataRole = (user?.publicMetadata?.role as RoleType) || null;
 
   useEffect(() => {
     let cancelled = false;
 
-    if (!isUserLoaded || !isSignedIn || !user || clerkMetadataRole === "admin") {
+    if (!isUserLoaded || !isSignedIn || !user || userMetadataRole === "admin") {
       return;
     }
 
@@ -50,7 +50,7 @@ export function useUserRole(): UserRoleResult {
     return () => {
       cancelled = true;
     };
-  }, [isUserLoaded, isSignedIn, user, clerkMetadataRole, getToken]);
+  }, [isUserLoaded, isSignedIn, user, userMetadataRole, getToken]);
 
   if (!isUserLoaded) {
     return {
@@ -69,11 +69,11 @@ export function useUserRole(): UserRoleResult {
   }
 
   const effectiveRole: RoleType =
-    clerkMetadataRole === "admin" || dbRole === "admin" ? "admin" : (dbRole || "user");
+    userMetadataRole === "admin" || dbRole === "admin" ? "admin" : (dbRole || "user");
 
   return {
     role: effectiveRole,
     isAdmin: effectiveRole === "admin",
-    isLoading: loadingDb && dbRole === null && clerkMetadataRole === null,
+    isLoading: loadingDb && dbRole === null && userMetadataRole === null,
   };
 }
