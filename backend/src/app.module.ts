@@ -12,6 +12,7 @@ import { CourseModulesModule } from './modules/course-modules/course-modules.mod
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { MediaModule } from './modules/media/media.module';
+import { TodosModule } from './modules/todos/todos.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
@@ -33,6 +34,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     LessonsModule,
     ProgressModule,
     MediaModule,
+    TodosModule,
   ],
   controllers: [AppController],
   providers: [
