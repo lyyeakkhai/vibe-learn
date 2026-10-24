@@ -8,7 +8,6 @@ import {
   Index,
 } from 'typeorm';
 import { Progress } from '../../progress/entities/progress.entity';
-import { Todo } from '../../todos/entities/todo.entity';
 
 export type UserRole = 'user' | 'admin';
 
@@ -45,9 +44,6 @@ export class User {
 
   @OneToMany(() => Progress, (progress) => progress.user)
   progress: Progress[];
-
-  @OneToMany(() => Todo, (todo) => todo.owner)
-  todos: Todo[];
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

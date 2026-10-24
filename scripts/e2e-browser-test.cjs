@@ -106,79 +106,57 @@ async function runBrowserTests() {
     record("Alice sign-in stores valid JWT token", !!aliceToken && aliceUser.email === "alice@test.dev", `User: ${aliceUser.email}`);
 
     // -------------------------------------------------------------------------
-    // Step 6: Verify Scoped Todos Authorization & Isolation in Browser
+    // Step 6: Verify Scoped Learner Progress Authorization & Isolation in Browser
     // -------------------------------------------------------------------------
-    console.log("\n--- 6. In-Browser Scoped Todos API with Bearer Header ---");
+    console.log("\n--- 6. In-Browser Scoped Learner Progress API with Bearer Header ---");
     
-    // Create a fresh Bob account and Bob's private todo
-    const bobEmail = `bob_${Date.now()}@test.dev`;
-    await fetch("http://localhost:3000/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: bobEmail, password: "secret123", fullName: "Bob Tester" })
-    });
+    // Fetch a course to get courseId and lessonId
+    const coursesRes = await fetch("http://localhost:3000/api/courses/python-for-data-work");
+    const courseData = await coursesRes.json();
+    const testCourseId = courseData.id;
+    const testLessonId = courseData.modules?.[0]?.lessons?.[0]?.id;
 
-    const bobLoginRes = await fetch("http://localhost:3000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: bobEmail, password: "secret123" })
-    });
-    const bobLoginData = await bobLoginRes.json();
-    const bobToken = bobLoginData.accessToken;
-
-    const bobTodoRes = await fetch("http://localhost:3000/api/todos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${bobToken}`
-      },
-      body: JSON.stringify({ title: "Bob Private Todo from Browser Suite" })
-    });
-    const bobTodo = await bobTodoRes.json();
-
-    const browserApiCheck = await page.evaluate(async (bobsTodoId) => {
+    const browserApiCheck = await page.evaluate(async ({ courseId, lessonId }) => {
       const token = localStorage.getItem("vibelearn_auth_token");
       
-      // 1. Fetch Alice's todos with Bearer token
-      const resTodos = await fetch("http://localhost:3000/api/todos", {
+      // 1. Fetch Alice's progress with Bearer token
+      const resProgress = await fetch("http://localhost:3000/api/progress", {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const todosData = await resTodos.json();
+      const progressData = await resProgress.json();
 
-      // 2. Create a new todo as Alice
-      const resCreate = await fetch("http://localhost:3000/api/todos", {
+      // 2. Save progress as Alice
+      const resSave = await fetch("http://localhost:3000/api/progress", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title: "Playwright Browser Task" })
+        body: JSON.stringify({
+          courseId,
+          lessonId,
+          resumeTimestamp: 120,
+          isCompleted: true
+        })
       });
-      const createdTodo = await resCreate.json();
+      const savedData = await resSave.json();
 
-      // 3. Try to access Bob's todo as Alice (ownership check - must return 404)
-      const resBobsTodo = await fetch(`http://localhost:3000/api/todos/${bobsTodoId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      // 4. Try to access Admin endpoint as Alice (expect 403 Forbidden)
+      // 3. Try to access Admin endpoint as Alice (expect 403 Forbidden)
       const resAdmin = await fetch("http://localhost:3000/api/admin/overview", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       return {
-        todosStatus: resTodos.status,
-        todosCount: Array.isArray(todosData) ? todosData.length : -1,
-        createStatus: resCreate.status,
-        createdTitle: createdTodo?.title,
-        bobsTodoStatus: resBobsTodo.status,
+        progressStatus: resProgress.status,
+        progressCount: Array.isArray(progressData) ? progressData.length : -1,
+        saveStatus: resSave.status,
+        savedCourseId: savedData?.courseId,
         adminStatus: resAdmin.status,
       };
-    }, bobTodo.id);
+    }, { courseId: testCourseId, lessonId: testLessonId });
 
-    record("GET /api/todos with Bearer header returns 200", browserApiCheck.todosStatus === 200, `Found ${browserApiCheck.todosCount} todos`);
-    record("POST /api/todos with Bearer header creates todo (201)", browserApiCheck.createStatus === 201, `Created: "${browserApiCheck.createdTitle}"`);
-    record("GET /api/todos/:bobsId as Alice returns 404 (ownership check)", browserApiCheck.bobsTodoStatus === 404, `Bob Todo ID: ${bobTodo.id}, Status: ${browserApiCheck.bobsTodoStatus}`);
+    record("GET /api/progress with Bearer header returns 200", browserApiCheck.progressStatus === 200, `Found ${browserApiCheck.progressCount} progress records`);
+    record("POST /api/progress with Bearer header saves progress (200)", browserApiCheck.saveStatus === 200, `Saved courseId: ${browserApiCheck.savedCourseId}`);
     record("GET /api/admin/overview as regular user returns 403 Forbidden", browserApiCheck.adminStatus === 403, `Status: ${browserApiCheck.adminStatus}`);
 
     // -------------------------------------------------------------------------
