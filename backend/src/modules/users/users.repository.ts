@@ -14,11 +14,58 @@ export class UsersRepository {
     return this.repo.findOne({ where: { id } });
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email })
+      .getOne();
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('LOWER(user.email) = LOWER(:email)', { email })
+      .getOne();
+  }
+
+  async findByIdWithRefreshToken(id: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .addSelect('user.hashedRefreshToken')
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
   async findByIdWithProgress(id: string): Promise<User | null> {
     return this.repo.findOne({
       where: { id },
       relations: { progress: true },
     });
+  }
+
+  async createAuthUser(data: {
+    id: string;
+    email: string;
+    passwordHash: string;
+    fullName?: string | null;
+    role?: 'user' | 'admin';
+  }): Promise<User> {
+    const user = this.repo.create({
+      id: data.id,
+      email: data.email,
+      passwordHash: data.passwordHash,
+      fullName: data.fullName ?? null,
+      role: data.role || 'user',
+    });
+    return this.repo.save(user);
+  }
+
+  async updateRefreshToken(
+    id: string,
+    hashedRefreshToken: string | null,
+  ): Promise<void> {
+    await this.repo.update(id, { hashedRefreshToken });
   }
 
   async upsertUser(data: {

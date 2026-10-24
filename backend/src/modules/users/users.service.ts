@@ -16,6 +16,35 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findByEmail(email);
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.usersRepository.findByEmailWithPassword(email);
+  }
+
+  async findByIdWithRefreshToken(id: string): Promise<User | null> {
+    return this.usersRepository.findByIdWithRefreshToken(id);
+  }
+
+  async createAuthUser(data: {
+    id: string;
+    email: string;
+    passwordHash: string;
+    fullName?: string | null;
+    role?: UserRole;
+  }): Promise<User> {
+    return this.usersRepository.createAuthUser(data);
+  }
+
+  async updateRefreshToken(
+    id: string,
+    hashedRefreshToken: string | null,
+  ): Promise<void> {
+    return this.usersRepository.updateRefreshToken(id, hashedRefreshToken);
+  }
+
   async findOrCreate(data: {
     id: string;
     email?: string | null;
@@ -59,19 +88,26 @@ export class UsersService {
   async getProfile(userId: string): Promise<UserProfileResponse> {
     const user = await this.usersRepository.findByIdWithProgress(userId);
     if (!user) {
-      throw new NotFoundException(`User with ID '${userId}' was not found`);
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    const completed = user.progress?.filter((p) => p.isCompleted).length || 0;
-    const uniqueCourseIds = new Set(user.progress?.map((p) => p.courseId));
+    const progressList = user.progress || [];
+    const completedLessonsCount = progressList.filter(
+      (p) => p.isCompleted,
+    ).length;
+
+    const uniqueCourseIds = new Set(
+      progressList.map((p) => p.courseId).filter(Boolean),
+    );
+    const activeCoursesCount = uniqueCourseIds.size;
 
     return {
       id: user.id,
       email: user.email,
       fullName: user.fullName,
-      role: user.role || 'user',
-      completedLessonsCount: completed,
-      activeCoursesCount: uniqueCourseIds.size,
+      role: user.role,
+      completedLessonsCount,
+      activeCoursesCount,
       createdAt: user.createdAt,
     };
   }

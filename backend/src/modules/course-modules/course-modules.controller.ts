@@ -14,14 +14,15 @@ import {
 import { CourseModulesService } from './course-modules.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 
 @Controller('course-modules')
 export class CourseModulesController {
   constructor(private readonly courseModulesService: CourseModulesService) {}
 
+  @Public()
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -29,7 +30,7 @@ export class CourseModulesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createDto: CreateCourseModuleDto) {
@@ -37,7 +38,7 @@ export class CourseModulesController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
   update(
@@ -48,7 +49,7 @@ export class CourseModulesController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseUUIDPipe) id: string) {
