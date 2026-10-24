@@ -1,55 +1,37 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Sparkles, ShieldCheck, UserCheck, ArrowRight, Loader2 } from "lucide-react"
+import { Sparkles, ShieldCheck, UserCheck, ArrowRight, Loader2, AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import logoImg from "@/assets/logo.png"
 
 export function SignInPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, quickDemoLogin } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      login(
-        {
-          id: `user_${Date.now()}`,
-          email: email || "learner@vibelearn.io",
-          fullName: email ? email.split("@")[0] : "Learner",
-        },
-        `mock_user_${Date.now()}`
-      )
-      setLoading(false)
+    setError(null)
+
+    try {
+      await login(email, password)
       navigate("/courses")
-    }, 400)
+    } catch (err: any) {
+      setError(err?.message || "Invalid credentials. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleQuickLogin = (role: "admin" | "learner") => {
+    quickDemoLogin(role)
     if (role === "admin") {
-      login(
-        {
-          id: "mock_user_admin",
-          email: "admin@vibelearn.io",
-          fullName: "Admin User",
-          publicMetadata: { role: "admin" },
-        },
-        "mock_user_admin"
-      )
       navigate("/admin/courses")
     } else {
-      login(
-        {
-          id: "mock_user_learner",
-          email: "learner@vibelearn.io",
-          fullName: "Alex Learner",
-          publicMetadata: { role: "user" },
-        },
-        "mock_user_test"
-      )
       navigate("/courses")
     }
   }
@@ -94,6 +76,13 @@ export function SignInPage() {
 
         {/* Sign In Form Card */}
         <div className="w-full rounded-2xl border border-neutral-200 bg-card p-6 shadow-md dark:border-neutral-800">
+          {error && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">

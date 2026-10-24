@@ -8,6 +8,7 @@ export interface AuthUser {
   fullName?: string;
   firstName?: string;
   imageUrl?: string;
+  role?: "admin" | "user";
   primaryEmailAddress?: { emailAddress: string };
   publicMetadata?: { role?: "admin" | "user" };
 }
@@ -17,8 +18,14 @@ interface AuthContextType {
   isLoaded: boolean;
   isSignedIn: boolean;
   getToken: () => Promise<string | null>;
-  login: (user: AuthUser, token?: string) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    fullName?: string,
+  ) => Promise<{ id: string; email: string }>;
+  logout: () => Promise<void>;
+  quickDemoLogin: (role: "admin" | "learner") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,37 +57,93 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [isLoaded] = useState(true);
 
-  const login = (newUser: AuthUser, authToken?: string) => {
-    const userToSave: AuthUser = {
-      ...newUser,
-      firstName: newUser.firstName || newUser.fullName?.split(" ")[0] || "Learner",
-      primaryEmailAddress: newUser.email
-        ? { emailAddress: newUser.email }
-        : newUser.primaryEmailAddress,
+  const persistAuth = (authUser: AuthUser, authToken: string) => {
+    const formattedUser: AuthUser = {
+      ...authUser,
+      firstName:
+        authUser.firstName || authUser.fullName?.split(" ")[0] || "Learner",
+      primaryEmailAddress: authUser.email
+        ? { emailAddress: authUser.email }
+        : authUser.primaryEmailAddress,
+      publicMetadata: { role: authUser.role || "user" },
     };
-    const effectiveToken = authToken || newUser.id;
 
-    setUser(userToSave);
-    setToken(effectiveToken);
-    ApiClient.setAuthToken(effectiveToken);
+    setUser(formattedUser);
+    setToken(authToken);
+    ApiClient.setAuthToken(authToken);
 
     try {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userToSave));
-      localStorage.setItem(TOKEN_STORAGE_KEY, effectiveToken);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(formattedUser));
+      localStorage.setItem(TOKEN_STORAGE_KEY, authToken);
     } catch (e) {
-      console.warn("Failed to persist auth", e);
+      console.warn("Failed to persist auth in localStorage", e);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    ApiClient.setAuthToken(null);
+  const login = async (email: string, password: string) => {
+    const res = await ApiClient.post<{
+      accessToken: string;
+      user: AuthUser;
+    }>("/auth/login", { email, password });
+
+    if (res?.accessToken && res?.user) {
+      persistAuth(res.user, res.accessToken);
+    }
+  };
+
+  const signup = async (
+    email: string,
+    password: string,
+    fullName?: string,
+  ) => {
+    return ApiClient.post<{ id: string; email: string }>("/auth/signup", {
+      email,
+      password,
+      fullName,
+    });
+  };
+
+  const logout = async () => {
     try {
-      localStorage.removeItem(USER_STORAGE_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-    } catch (e) {
-      console.warn("Failed to clear auth", e);
+      await ApiClient.post("/auth/logout");
+    } catch (err) {
+      console.warn("Logout request failed:", err);
+    } finally {
+      setUser(null);
+      setToken(null);
+      ApiClient.setAuthToken(null);
+      try {
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      } catch (e) {
+        console.warn("Failed to clear auth from localStorage", e);
+      }
+    }
+  };
+
+  const quickDemoLogin = (role: "admin" | "learner") => {
+    if (role === "admin") {
+      persistAuth(
+        {
+          id: "mock_user_admin",
+          email: "admin@vibelearn.io",
+          fullName: "Admin User",
+          role: "admin",
+          publicMetadata: { role: "admin" },
+        },
+        "mock_user_admin",
+      );
+    } else {
+      persistAuth(
+        {
+          id: "mock_user_learner",
+          email: "learner@vibelearn.io",
+          fullName: "Alex Learner",
+          role: "user",
+          publicMetadata: { role: "user" },
+        },
+        "mock_user_test",
+      );
     }
   };
 
@@ -96,7 +159,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSignedIn: Boolean(user),
         getToken,
         login,
+        signup,
         logout,
+        quickDemoLogin,
       }}
     >
       {children}
@@ -115,7 +180,9 @@ export function useAuth() {
     isSignedIn: context.isSignedIn,
     userId: context.user?.id || null,
     login: context.login,
+    signup: context.signup,
     logout: context.logout,
+    quickDemoLogin: context.quickDemoLogin,
   };
 }
 
