@@ -209,9 +209,26 @@ export class AuthService {
     return { accessToken: newAccessToken };
   }
 
-  async logout(userId: string, res: Response): Promise<{ message: string }> {
-    if (userId) {
-      await this.usersService.updateRefreshToken(userId, null);
+  async logout(
+    userId: string | undefined,
+    cookies: Record<string, any> | undefined,
+    res: Response,
+  ): Promise<{ message: string }> {
+    let targetUserId = userId;
+    if (!targetUserId && cookies?.refreshToken) {
+      try {
+        const payload = await this.jwtService.verifyAsync<{ sub: string }>(
+          cookies.refreshToken,
+          { secret: this.refreshSecret },
+        );
+        targetUserId = payload?.sub;
+      } catch {
+        // Ignore token verification errors during logout
+      }
+    }
+
+    if (targetUserId) {
+      await this.usersService.updateRefreshToken(targetUserId, null);
     }
     res.clearCookie('refreshToken', { path: '/api/auth' });
     return { message: 'Logged out successfully' };

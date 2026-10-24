@@ -45,12 +45,14 @@ export class AuthController {
     return this.authService.refresh(req.cookies || {}, res);
   }
 
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
     @CurrentUser() user: any,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.logout(user?.id, res);
+    return this.authService.logout(user?.id, req.cookies, res);
   }
 }
